@@ -31,9 +31,10 @@ body,
 
 /* Sidebar - Floating Panel/Island */
 section[data-testid="stSidebar"] {
-    background-color: rgba(20, 20, 25, 0.7);
-    backdrop-filter: blur(40px);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(10, 10, 12, 0.4);
+    /* Much more transparent */
+    backdrop-filter: blur(50px);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Inputs: Dark Pills */
@@ -79,31 +80,6 @@ h1,
 h2,
 h3 {
     font-weight: 700;
-    letter-spacing: -0.02em;
-    background: linear-gradient(90deg, #FFFFFF, #EBEBF5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Metric styling override */
-[data-testid="stMetricValue"] {
-    background: transparent !important;
-    backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    font-size: 36px !important;
-    font-weight: 800 !important;
-    color: #FFFFFF !important;
-}
-
-[data-testid="stMetricLabel"] {
-    color: var(--text-secondary) !important;
-}
-
-/* Tabs */
-.stTabs [data-baseweb="tab-list"] {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 50px;
 }
 
 .stTabs [aria-selected="true"] {
@@ -119,7 +95,12 @@ h3 {
 
 /* Hide Streamlit Cruft */
 #MainMenu,
-footer,
-header {
+footer {
     visibility: hidden;
+}
+
+/* Restore Header for Sidebar Toggle */
+header {
+    visibility: visible !important;
+    background-color: transparent !important;
 }
