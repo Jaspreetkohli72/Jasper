@@ -11,7 +11,7 @@ st.set_page_config(
     page_title="My Wallet",
     page_icon="💸",
     layout="wide",
-    initial_sidebar_state="auto"
+    initial_sidebar_state="expanded"
 )
 
 # Load CSS
@@ -79,9 +79,24 @@ with st.sidebar:
         default_index=0,
         styles={
             "container": {"padding": "0!important", "background-color": "transparent"},
-            "icon": {"color": "#007aff", "font-size": "18px"}, 
-            "nav-link": {"font-size": "16px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
-            "nav-link-selected": {"background-color": "#007aff"},
+            "icon": {"color": "#86868b", "font-size": "20px"}, 
+            "nav-link": {
+                "font-family": "SF Pro Display, sans-serif",
+                "font-size": "17px", 
+                "text-align": "left", 
+                "margin": "8px", 
+                "padding": "12px",
+                "border-radius": "16px",
+                "--hover-color": "rgba(255,255,255,0.1)",
+                "color": "#ffffff",
+                "font-weight": "500"
+            },
+            "nav-link-selected": {
+                "background": "linear-gradient(135deg, #0A84FF 0%, #007aff 100%)", 
+                "color": "white",
+                "box-shadow": "0 4px 15px rgba(0, 122, 255, 0.4)",
+                "font-weight": "600"
+            },
         }
     )
 
