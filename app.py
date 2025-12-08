@@ -34,39 +34,36 @@ def get_categories():
     response = supabase.table('categories').select("*").execute()
     return pd.DataFrame(response.data) if response.data else pd.DataFrame()
 
-def get_budgets():
-    response = supabase.table('budgets').select("*, categories(name)").execute()
-    df = pd.DataFrame(response.data)
-    if not df.empty:
-        df['category_name'] = df['categories'].apply(lambda x: x['name'] if x else 'Unknown')
-    return df
+def get_global_budget():
+    current_month = datetime.now().strftime("%Y-%m")
+    try:
+        response = supabase.table('global_budgets').select("*").eq('month_year', current_month).execute()
+        return response.data[0] if response.data else None
+    except:
+        return None
 
-def check_budget_alerts(transactions_df, budgets_df):
+def check_budget_alerts(transactions_df, global_budget_data):
     alerts = []
-    if transactions_df.empty or budgets_df.empty:
+    if transactions_df.empty or not global_budget_data:
         return alerts
     
     current_month = datetime.now().strftime("%Y-%m")
-    # Filter this month's expenses
-    this_month_tx = transactions_df[
+    total_spent = transactions_df[
         (pd.to_datetime(transactions_df['transaction_date']).dt.strftime('%Y-%m') == current_month) &
         (transactions_df['type'] == 'expense')
-    ]
+    ]['amount'].sum()
     
-    # Group by category
-    spending = this_month_tx.groupby('category_id')['amount'].sum().reset_index()
+    limit = global_budget_data['amount_limit']
     
-    # Merge with budgets
-    merged = pd.merge(budgets_df, spending, on='category_id', how='left')
-    merged['amount'] = merged['amount'].fillna(0)
-    
-    for _, row in merged.iterrows():
-        if row['amount'] > row['amount_limit']:
-            alerts.append(f"🚨 Over Budget: {row['category_name']} ({row['amount']} / {row['amount_limit']})")
+    if total_spent > limit:
+        alerts.append(f"🚨 Over Total Budget: You've spent ${total_spent:,.2f} / ${limit:,.2f}")
+    elif total_spent > (limit * 0.9):
+         alerts.append(f"⚠️ Near Budget Limit: ${total_spent:,.2f} / ${limit:,.2f}")
+         
     return alerts
 
 # --- Navigation ---
-# Sidebar for Desktop, Bottom for Mobile (simulated via layout)
+# Sidebar for Desktop
 with st.sidebar:
     st.image("https://img.icons8.com/3d-fluency/94/wallet.png", width=60)
     st.title("My Wallet")
@@ -107,7 +104,7 @@ if selected_page == "Dashboard":
     
     # Fetch Data
     df_tx = get_transactions()
-    df_budgets = get_budgets()
+    global_budget = get_global_budget()
     
     if not df_tx.empty:
         # Metrics
@@ -121,10 +118,17 @@ if selected_page == "Dashboard":
         col3.metric("Total Expenses", f"${total_expense:,.2f}", delta_color="inverse")
         
         # Alerts
-        alerts = check_budget_alerts(df_tx, df_budgets)
+        alerts = check_budget_alerts(df_tx, global_budget)
         for alert in alerts:
             st.error(alert)
         
+        if global_budget:
+            # Budget Progress Bar
+            budget_val = global_budget['amount_limit']
+            pct = min(total_expense / budget_val, 1.0)
+            st.caption(f"Monthly Budget Progress: ${total_expense:,.0f} / ${budget_val:,.0f}")
+            st.progress(pct)
+
         # Charts
         c1, c2 = st.columns((2, 1))
         with c1:
@@ -140,8 +144,7 @@ if selected_page == "Dashboard":
             st.subheader("Spending by Category")
             expenses = df_tx[df_tx['type'] == 'expense']
             if not expenses.empty:
-                cat_spend = expenses.groupby('category').sum(numeric_only=True).reset_index() # Need category name join ideally, currently using ID or description if manually entered
-                # Fetch category names mapping
+                cat_spend = expenses.groupby('category').sum(numeric_only=True).reset_index() 
                 cats = get_categories()
                 if not cats.empty:
                     cat_map = dict(zip(cats['id'], cats['name']))
@@ -184,7 +187,6 @@ elif selected_page == "Transactions":
             if submitted:
                 if amount > 0 and selected_cat_id:
                     data = {
-                        "user_id": supabase.auth.uid, # Might be None if generic anon
                         "amount": amount,
                         "type": tx_type,
                         "category_id": selected_cat_id,
@@ -192,11 +194,10 @@ elif selected_page == "Transactions":
                         "transaction_date": tx_date.strftime("%Y-%m-%d")
                     }
                     try:
-                        # Remove user_id if authentication is not set up (using anonymous for this demo)
-                        del data['user_id']
+                        # user_id handling: Assuming single user or anon for now as per setup
                         supabase.table('transactions').insert(data).execute()
                         st.success("Transaction Saved!")
-                        st.rerun() # Refresh
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Error: {e}")
                 else:
@@ -206,12 +207,10 @@ elif selected_page == "Transactions":
         st.subheader("Recent History")
         df_tx = get_transactions()
         if not df_tx.empty:
-            # Join with category names
              if not categories.empty:
                 cat_map = dict(zip(categories['id'], categories['name']))
                 df_tx['category_name'] = df_tx['category_id'].map(cat_map)
                 
-            # Display
              st.dataframe(
                 df_tx[['transaction_date', 'type', 'category_name', 'amount', 'description']],
                 use_container_width=True,
@@ -221,44 +220,28 @@ elif selected_page == "Transactions":
             st.info("No history available.")
 
 elif selected_page == "Settings":
-    st.header("Settings & Budgets")
+    st.header("Settings")
     
-    st.subheader("Set Monthly Budgets")
-    categories = get_categories()
-    if not categories.empty:
-        expense_cats = categories[categories['type'] == 'expense']
-        
-        # Current budgets
-        budgets = get_budgets()
-        
-        for idx, row in expense_cats.iterrows():
-            current_month = datetime.now().strftime("%Y-%m")
-            
-            # Find existing budget
-            existing_limit = 0.0
-            if not budgets.empty:
-                match = budgets[(budgets['category_id'] == row['id']) & (budgets['month_year'] == current_month)]
-                if not match.empty:
-                    existing_limit = match.iloc[0]['amount_limit']
-            
-            with st.expander(f"Budget for {row['name']}"):
-                new_limit = st.number_input(f"Limit for {row['name']}", value=float(existing_limit), key=f"bud_{row['id']}")
-                if st.button(f"Save {row['name']}", key=f"btn_{row['id']}"):
-                    # Upsert logic
-                    data = {
-                        "category_id": row['id'],
-                        "amount_limit": new_limit,
-                        "month_year": current_month
-                    }
-                    try:
-                        # Check exist
-                        if not budgets.empty and not budgets[(budgets['category_id'] == row['id']) & (budgets['month_year'] == current_month)].empty:
-                            bid = budgets[(budgets['category_id'] == row['id']) & (budgets['month_year'] == current_month)].iloc[0]['id']
-                            supabase.table('budgets').update({"amount_limit": new_limit}).eq('id', bid).execute()
-                        else:
-                            supabase.table('budgets').insert(data).execute()
-                        st.balloons()
-                    except Exception as e:
-                        st.error(f"Failed to save: {e}")
-    else:
-        st.warning("No categories to set budgets for.")
+    st.subheader("Monthly Budget Goal")
+    st.info("Set a single total budget for all expenses this month.")
+    
+    current_month = datetime.now().strftime("%Y-%m")
+    existing_budget = get_global_budget()
+    default_val = float(existing_budget['amount_limit']) if existing_budget else 1000.0
+    
+    new_budget = st.number_input(f"Total Budget for {current_month}", value=default_val, step=100.0)
+    
+    if st.button("Save Monthly Budget"):
+        data = {
+            "amount_limit": new_budget,
+            "month_year": current_month
+        }
+        try:
+            if existing_budget:
+                supabase.table('global_budgets').update(data).eq('id', existing_budget['id']).execute()
+            else:
+                 supabase.table('global_budgets').insert(data).execute()
+            st.success(f"Budget updated to ${new_budget:,.2f}")
+        except Exception as e:
+            st.error(f"Failed to save budget: {e}")
+            st.caption("Did you run the migration SQL?")

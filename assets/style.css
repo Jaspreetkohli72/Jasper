@@ -1,88 +1,396 @@
-/* iOS 26 / VisionOS Dark Mode */
-@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+/* Liquid Glass / iOS 26 Concept Design */
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@4400;500;600&display=swap');
 
 :root {
-    --glass-bg: rgba(30, 30, 35, 0.65);
-    /* Darker glass */
-    --glass-border: rgba(255, 255, 255, 0.15);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    --accent-color: #0A84FF;
-    /* iOS Blue Dark Mode */
+    --glass-surface: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-highlight: rgba(255, 255, 255, 0.1);
+    --liquid-accent: #0A84FF;
     --text-primary: #FFFFFF;
-    --text-secondary: #EBEBF599;
-    /* iOS label color dark */
-    --card-radius: 24px;
+    --text-secondary: rgba(255, 255, 255, 0.6);
 }
 
 html,
 body,
 [class*="css"] {
-    font-family: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'SF Pro Display', 'Inter', sans-serif;
     color: var(--text-primary);
     background-color: #000000;
-    /* Deep black fallback */
 }
 
-.stDateInput>div>div>input {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-radius: 50px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    height: 50px;
-    padding-left: 20px;
-    font-size: 16px;
-    color: white !important;
-    /* Input text white */
-    backdrop-filter: blur(10px);
+/* 1. Liquid Background */
+.stApp {
+    background:
+        radial-gradient(circle at 0% 0%, rgba(10, 132, 255, 0.15), transparent 40%),
+        radial-gradient(circle at 100% 0%, rgba(172, 72, 196, 0.15), transparent 40%),
+        radial-gradient(circle at 50% 100%, rgba(10, 132, 255, 0.1), transparent 60%),
+        linear-gradient(180deg, #050505 0%, #000000 100%);
+    background-attachment: fixed;
 }
 
-/* Placeholder text color fix if needed */
-::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-/* Selectbox specific */
-.stSelectbox div[data-baseweb="select"]>div {
-    background-color: transparent !important;
-    color: white !important;
-    border: none;
-}
-
-/* Buttons: Neon Glow */
-.stButton>button {
-    background: linear-gradient(135deg, #0A84FF 0%, #0051a8 100%);
+/* 2. Liquid Glass Cards */
+div.css-1r6slb0,
+div.stDataFrame,
+div[data-testid="stMetricValue"],
+div[data-testid="stExpander"],
+div.stAlert,
+div[data-testid="stForm"] {
+    background: var(--glass-surface) !important;
+    backdrop-filter: blur(60px) saturate(150%);
+    -webkit-backdrop-filter: blur(60px) saturate(150%);
+    border-radius: 32px;
+    border: 1px solid var(--glass-border);
+    /* The ""Liquid Edge"" - Inner light catch */
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+        0 20px 50px rgba(0, 0, 0, 0.5);
     color: white;
-    border-radius: 50px !important;
-    height: 50px;
-    border: none;
-    box-shadow: 0 0 20px rgba(10, 132, 255, 0.4);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Text & Headers */
+div.css-1r6slb0:hover,
+div.stDataFrame:hover,
+div[data-testid="stMetricValue"]:hover {
+    transform: translateY(-5px) scale(1.01);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+        0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+div.stDataFrame p,
+div[data-testid="stMetricValue"] div {
+    color: white !important;
+}
+
+/* 3. Floating Sidebar Glass */
+section[data-testid="stSidebar"] {
+    background-color: transparent !important;
+    /* Full transparency */
+    border-right: none;
+    /* Create a glass pane effect specifically for the container if possible, 
+       but for Streamlit sidebar, we rely on the elements. 
+       Let's style the wrapper to look like a floating dock. */
+    background: linear-gradient(180deg, rgba(20, 20, 30, 0.6) 0%, rgba(10, 10, 15, 0.8) 100%);
+    backdrop-filter: blur(50px);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* 4. Liquid Inputs */
+.stTextInput>div>div>input,
+.stSelectbox>div>div>div,
+.stNumberInput>div>div>input,
+.stDateInput>div>div>input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    height: 54px;
+    padding-left: 20px;
+    font-size: 17px;
+    color: white !important;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stTextInput>div>div>input:focus,
+.stNumberInput>div>div>input:focus {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--liquid-accent) !important;
+    box-shadow: 0 0 30px rgba(10, 132, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* 5. Liquid Buttons */
+.stButton>button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 24px;
+    height: 54px;
+    font-weight: 600;
+    font-size: 17px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Specific Primary Action Button Override if needed (usually first button) */
+div[data-testid="stForm"] .stButton>button {
+    background: var(--liquid-accent);
+    box-shadow: 0 0 20px rgba(10, 132, 255, 0.5);
+    border: none;
+}
+
+.stButton>button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Headers */
 h1,
 h2,
 h3 {
     font-weight: 700;
+    background: linear-gradient(180deg, #FFFFFF 0%, #AAAAAA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Utils */
+.stTabs [data-baseweb="tab-list"] {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 6px;
 }
 
 .stTabs [aria-selected="true"] {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: white !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Dataframe/Table Text */
-.stDataFrame div,
-.stDataFrame span {
-    color: white !important;
-}
-
-/* Hide Streamlit Cruft */
+/* Hide Streamlit */
 #MainMenu,
 footer {
     visibility: hidden;
 }
 
-/* Restore Header for Sidebar Toggle */
+/* Liquid Glass / iOS 26 Concept Design */
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&family=Inter:wght@4400;500;600&display=swap');
+
+:root {
+    --glass-surface: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-highlight: rgba(255, 255, 255, 0.1);
+    --liquid-accent: #0A84FF;
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.6);
+}
+
+html,
+body,
+[class*="css"] {
+    font-family: 'SF Pro Display', 'Inter', sans-serif;
+    color: var(--text-primary);
+    background-color: #000000;
+}
+
+/* 1. Liquid Background */
+.stApp {
+    background:
+        radial-gradient(circle at 0% 0%, rgba(10, 132, 255, 0.15), transparent 40%),
+        radial-gradient(circle at 100% 0%, rgba(172, 72, 196, 0.15), transparent 40%),
+        radial-gradient(circle at 50% 100%, rgba(10, 132, 255, 0.1), transparent 60%),
+        linear-gradient(180deg, #050505 0%, #000000 100%);
+    background-attachment: fixed;
+}
+
+/* 2. Liquid Glass Cards */
+div.css-1r6slb0,
+div.stDataFrame,
+div[data-testid="stMetricValue"],
+div[data-testid="stExpander"],
+div.stAlert,
+div[data-testid="stForm"] {
+    background: var(--glass-surface) !important;
+    backdrop-filter: blur(60px) saturate(150%);
+    -webkit-backdrop-filter: blur(60px) saturate(150%);
+    border-radius: 32px;
+    border: 1px solid var(--glass-border);
+    /* The ""Liquid Edge"" - Inner light catch */
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+        0 20px 50px rgba(0, 0, 0, 0.5);
+    color: white;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+div.css-1r6slb0:hover,
+div.stDataFrame:hover,
+div[data-testid="stMetricValue"]:hover {
+    transform: translateY(-5px) scale(1.01);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+        0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+div.stDataFrame p,
+div[data-testid="stMetricValue"] div {
+    color: white !important;
+}
+
+/* 3. Floating Sidebar Glass */
+section[data-testid="stSidebar"] {
+    background-color: transparent !important;
+    /* Full transparency */
+    border-right: none;
+    /* Create a glass pane effect specifically for the container if possible, 
+       but for Streamlit sidebar, we rely on the elements. 
+       Let's style the wrapper to look like a floating dock. */
+    background: linear-gradient(180deg, rgba(20, 20, 30, 0.6) 0%, rgba(10, 10, 15, 0.8) 100%);
+    backdrop-filter: blur(50px);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* 4. Liquid Inputs */
+.stTextInput>div>div>input,
+.stSelectbox>div>div>div,
+.stNumberInput>div>div>input,
+.stDateInput>div>div>input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    height: 54px;
+    padding-left: 20px;
+    font-size: 17px;
+    color: white !important;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stTextInput>div>div>input:focus,
+.stNumberInput>div>div>input:focus {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--liquid-accent) !important;
+    box-shadow: 0 0 30px rgba(10, 132, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* 5. Liquid Buttons */
+.stButton>button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 24px;
+    height: 54px;
+    font-weight: 600;
+    font-size: 17px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Specific Primary Action Button Override if needed (usually first button) */
+div[data-testid="stForm"] .stButton>button {
+    background: var(--liquid-accent);
+    box-shadow: 0 0 20px rgba(10, 132, 255, 0.5);
+    border: none;
+}
+
+.stButton>button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Headers */
+h1,
+h2,
+h3 {
+    font-weight: 700;
+    background: linear-gradient(180deg, #FFFFFF 0%, #AAAAAA 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Utils */
+.stTabs [data-baseweb="tab-list"] {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 6px;
+}
+
+.stTabs [aria-selected="true"] {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 18px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Hide Streamlit */
+#MainMenu,
+footer {
+    visibility: hidden;
+}
+
 header {
     visibility: visible !important;
-    background-color: transparent !important;
+    background: transparent !important;
+}
+
+/* Alert Text Fix */
+div.stAlert>div {
+    color: white !important;
+}
+
+/* Mobile Responsive Navigation (Sticky Bottom) */
+@media (max-width: 768px) {
+
+    /* Transform Sidebar to Bottom Bar */
+    section[data-testid="stSidebar"] {
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        height: auto !important;
+        min-width: 100vw !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        border-right: none !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: rgba(10, 10, 12, 0.95) !important;
+        /* increased opacity for contrast */
+        backdrop-filter: blur(50px) !important;
+        padding-top: 0 !important;
+        z-index: 100000;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Hide Sidebar Image/Title on Mobile for compact view */
+    section[data-testid="stSidebar"] img,
+    section[data-testid="stSidebar"] h1 {
+        display: none !important;
+    }
+
+    /* Adjust Option Menu Container */
+    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
+        width: 100% !important;
+        gap: 0 !important;
+    }
+
+    /* Make Option Menu items horizontal */
+    .nav-link {
+        margin: 4px !important;
+        padding: 8px !important;
+        font-size: 14px !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Hide the top resize handle */
+    div[data-testid="stSidebarNav"] {
+        display: none !important;
+    }
+
+    /* Ensure content is not hidden behind bottom bar */
+    .stApp {
+        padding-bottom: 100px !important;
+    }
+}
+
+/* Fix background-clip warning */
+h1,
+h2,
+h3 {
+    background-clip: text;
+    -webkit-background-clip: text;
 }
