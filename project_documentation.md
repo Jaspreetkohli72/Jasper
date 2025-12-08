@@ -1,89 +1,106 @@
-# 📘 Personal Finance Tracker - Project Documentation
+# 🛠️ Liquid Glass Finance - Technical Implementation Manual
 
-**Version:** 1.0.0
-**Scope:** User Guide & System Architecture
-**Repository:** [Jaspreetkohli72/testWallet](https://github.com/Jaspreetkohli72/testWallet.git)
-
----
-
-# PART 1: User Guide
-
-## 1. Introduction
-This application is a modern, iOS-16 styled Personal Finance Tracker designed to help users manage their income, expenses, and budgets. It is built with **Streamlit** (Frontend) and **Supabase** (Backend/Database).
-
-## 2. Features
-
-### 📊 Dashboard
-- **Financial Overview**: Real-time metrics for Total Balance, Total Income, and Total Expenses.
-- **Budget Alerts**: Visual warnings (Red/Error) when category spending exceeds the defined monthly budget.
-- **Visualizations**: 
-    - **Income vs Expense**: Monthly bar chart comparison.
-    - **Spending Breakdown**: Donut chart showing expense distribution by category.
-
-### 💸 Transactions
-- **Add New**:
-    - Simple form to log Income or Expenses.
-    - Date picker, Amount, Category selection (dynamic), and Description.
-- **History**:
-    - Tabular view of all recent transactions.
-
-### ⚙️ Settings (Budget Management)
-- **Budget Control**: Set specific monthly spending limits for each expense category.
-- **Persistence**: Budgets are saved to Supabase and checked automatically against spending.
-
-## 3. Design System (iOS 16 / Glassmorphism)
-- **Aesthetic**: Uses translucency, blur effects (`backdrop-filter: blur(20px)`), and rounded corners to mimic the iOS 16 OEM design language.
-- **Responsiveness**:
-    - **Desktop**: Left Sidebar Navigation.
-    - **Mobile**: Sticky Bottom Navigation (simulated via layout logic where applicable).
-- **Typography**: Uses 'Inter' font to match the clean San Francisco system font look.
+**Version:** 2.1.0 (Shader Engine Upgrade)
+**Renderer Target:** CanvasKit (WebGL) / Skia
+**Core Dependency:** `oc_liquid_glass`
 
 ---
 
-# PART 2: Technical Architecture
+## 1. Architecture Overview (The "Glass Engine")
 
-## 4. Tech Stack
-- **Frontend**: Streamlit
-- **Backend/Database**: Supabase (PostgreSQL)
-- **Language**: Python 3.x
-- **Visualization**: Plotly Express
-- **ORM/Client**: `supabase-py`
+The application's signature visual aesthetic—the "Liquid Glass" effect—is not merely a background blur. It is a **multi-layered composite rendering pipeline** that simulates physical optical properties: refraction, specular reflection, and caustics.
 
-## 5. Database Schema
-The system uses three core tables in Supabase:
+### 1.1 The 6-Layer Composition Stack
+The `LiquidGlass` widget (`lib/widgets/liquid_glass.dart`) is the fundamental building block. Unlike standard Flutter `BackdropFilter` implementations, it constructs the glass effect using a precise `Stack` of 6 render layers to achieve 1:1 parity with advanced CSS `backdrop-filter` compositions.
 
-### `categories`
-- `id` (UUID, PK): Unique identifier.
-- `name` (Text): Category name (e.g., 'Food', 'Salary').
-- `type` (Text): 'income' or 'expense'.
-- `icon` (Text): Emoji icon.
+| Layer | Component | Function | Technical Implementation |
+| :--- | :--- | :--- | :--- |
+| **0** | `BoxShadow` | Soft Depth | `BlurRadius: 80`, `Offset: (0, 32)`, `Opacity: 0.75` (Deep ambient occlusion) |
+| **1** | `OCLiquidGlassGroup` | **Refraction Engine** | Compiles the GLSL shader. Distorts background pixels based on a normal map simulation. |
+| **2** | `Container(Gradient)` | Base Tint | Provides the surface color. Supports custom gradients for Wallet Cards. Default: `rgba(15, 23, 42, 0.72)`. |
+| **3** | `LinearGradient` | **Specular Highlight** | Simulates a light source from Top-Left. `Color(0xFFF8FAFC).withOpacity(0.15)` blending to transparent. |
+| **4** | `RadialGradient` | Vignette | Darkens the bottom-right edges to add volume. Mix-blend-mode simulation via `Colors.black.withOpacity(0.6)`. |
+| **5** | `Border` | Edge Definition | 1px border `rgba(148, 163, 184, 0.25)` to simulate cut glass edges. |
 
-### `transactions`
-- `id` (UUID, PK): Unique identifier.
-- `amount` (Numeric): Transaction value.
-- `type` (Text): 'income' or 'expense'.
-- `category_id` (UUID, FK): Link to `categories`.
-- `transaction_date` (Date): Date of transaction.
-- `description` (Text): User notes.
+### 1.2 Shader Configuration (`OCLiquidGlassSettings`)
+The GLSL shader is tuned with specific float values to balance performance and visual realism.
 
-### `budgets`
-- `id` (UUID, PK): Unique identifier.
-- `category_id` (UUID, FK): Link to `categories`.
-- `amount_limit` (Numeric): Monthly limit.
-- `month_year` (Text): Format 'YYYY-MM'.
-
-## 6. Setup & Deployment
-
-### Prerequisites
-1.  **Supabase Project**: Created with the provided schema (`db_schema.sql`).
-2.  **Environment Variables**: `SUPABASE_URL` and `SUPABASE_KEY` configured in `utils/supabase_client.py` or `.streamlit/secrets.toml`.
-
-### Installation
-```bash
-pip install -r requirements.txt
-streamlit run app.py
+```dart
+settings: OCLiquidGlassSettings(
+  blurRadiusPx: isStrong ? 28.0 : 20.0, // Matches CSS --blur-strong
+  refractStrength: isStrong ? 0.8 : 0.5, // High IOR (Index of Refraction) simulation
+  specStrength: 2.0,                     // Intense highlights
+  specWidth: 1.5,
+  specPower: 5.0,                        // Sharpness of the reflection
+  specAngle: 0.8,
+  distortFalloffPx: 30,                  // Softens distortion at edges to prevent clipping
+  blendPx: 20,
+)
 ```
 
-## 7. Security & Notes
-- **Authentication**: Currently uses Anonymous Key (Client-side safe). For multi-user support, Row Level Security (RLS) policies should be enabled on Supabase.
-- **API Keys**: Hardcoded in `utils/supabase_client.py` for this specific deployment as per user request. In production, move to Environment Variables.
+---
+
+## 2. Component Implementation Details
+
+### 2.1 The `LiquidGlass` Reusable Widget
+Designed as a drop-in wrapper for any content. It exposes a clean API while encapsulating the complexity of the 6-layer stack.
+
+```dart
+class LiquidGlass extends StatelessWidget {
+  final Widget child;
+  final double borderRadius;
+  final Gradient? background; // Allows overriding the "glass color" (e.g., specific wallet tints)
+
+  // ... implementation handles the Stack & ClipRRect context ...
+}
+```
+
+### 2.2 Wallet Cards (Custom Gradients)
+Specific cards use bespoke radial gradients passed to the `background` parameter to differentiate their financial context while maintaining the unified glass physics.
+
+**Implementation (`wallet_card.dart`):**
+```dart
+LiquidGlass(
+  background: RadialGradient(
+    center: Alignment.topLeft,
+    radius: 1.0,
+    colors: [
+      Color.fromRGBO(148, 163, 184, 0.22), // Light Slate (Top-Left Light interaction)
+      Color.fromRGBO(15, 23, 42, 0.9),     // Dark Slate Base (Opaque body)
+    ],
+  ),
+  // ...
+)
+```
+
+### 2.3 Layout & Responsiveness
+The Sidebar uses a custom implementation instead of `NavigationRail` to support the glass effect.
+- **Constraints**: Fixed `width: 260` on Desktop.
+- **Active State**: Navigation items use a **Golden Radial Gradient** (`Color.fromRGBO(250, 204, 21, 0.2)`) to indicate selection, simulating an active LED beneath the glass surface.
+
+---
+
+## 3. Web Renderer Requirements
+This specific shader implementation relies on **Skia/CanvasKit** for advanced fragment shader support.
+
+> **CRITICAL**: When building for web, you MUST strictly enforce the CanvasKit renderer. The HTML (dom-based) renderer cannot process the `runtimeEffect` shaders used by `oc_liquid_glass`.
+
+**Build Command:**
+```bash
+flutter build web --web-renderer canvaskit --release
+```
+
+**Debug Command:**
+```bash
+flutter run -d chrome --web-renderer canvaskit
+```
+
+---
+
+## 4. Visual Assets & Tokens
+- **Font**: System UI (`-apple-system`, `BlinkMacSystemFont`), mapped to Flutter's default Typography.
+- **Colors**:
+  - `Accent Yellow`: `#FACC15`
+  - `Accent Green`: `#22C55E`
+  - `Glass Soft`: `rgba(15, 23, 42, 0.85)`
+- **Orbits**: The background contains animated "Orbits" (`BackgroundOrbits` widget) which are essential for the refraction effect to be visible. The glass *needs* something to refract; a solid black background will render the effect invisible.

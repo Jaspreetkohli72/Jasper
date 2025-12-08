@@ -42,3 +42,22 @@ The app follows the natural flow of your business:
 ### 5. Staff Management 👥
 *   **Team Roster**: Manage your team members, track their status (Available/On Site), and assign them to projects.
 *   **Roles & Wages**: Define custom roles and set daily wages for accurate labor cost tracking.
+
+---
+
+## 📱 Automated iOS Build (LiquidGlassFinance)
+
+This project includes a CI/CD pipeline configured with **Codemagic** to automatically build the iOS application (`.ipa`) whenever code is pushed to the `main` branch. This allows for cloud-based building without requiring local Mac hardware.
+
+### ⚙️ Setup Instructions
+1.  **Connect Repository**: Log in to the [Codemagic Dashboard](https://codemagic.io/) and connect this GitHub repository.
+2.  **Configuration**: Codemagic will automatically detect the `codemagic.yaml` file in the root directory. No manual workflow configuration is needed in the UI.
+3.  **Trigger**: Push a commit to the `main` branch to trigger the `ios-free-build` workflow.
+4.  **Artifacts**: Once the build completes, download the `.ipa` file from the "Artifacts" section of the build page.
+
+### ⚠️ Important Note regarding App Store
+**The generated `.ipa` is unsigned (`--no-codesign`).**
+*   This pipeline is intended for **testing and sideloading** purposes only.
+*   To submit this app to the Apple App Store or use TestFlight, you must explicitly configure code signing with valid Apple Developer credentials.
+*   **Requirement**: A paid [Apple Developer Program](https://developer.apple.com/) membership ($99/year) is required for App Store submission and signed distribution.
+

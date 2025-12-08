@@ -25,9 +25,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.black,
+        scaffoldBackgroundColor: const Color(0xFF020617), // Deep Night Blue
         primaryColor: const Color(0xFF0A84FF),
-        textTheme: GoogleFonts.sfProDisplayTextTheme(
+        textTheme: GoogleFonts.interTextTheme(
           Theme.of(context).textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
         ),
         useMaterial3: true,
