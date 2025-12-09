@@ -1,63 +1,65 @@
-# 🏗️ JugnooCRM: Easy Project & Finance Management
+# Jasper
 
-## 👋 What is JugnooCRM?
-JugnooCRM is a simple, powerful tool designed to help you manage your entire business workflow in one place. It handles everything from creating accurate client estimates and tracking inventory to monitoring your project finances and profits. It replaces messy paper notes and complex spreadsheets with a clean, easy-to-use digital system.
+A modern, glassmorphic personal finance cockpit built with Next.js, Tailwind CSS, and Supabase.
 
-## 🚀 How It Works (The Core Loop)
-The app follows the natural flow of your business:
-1.  **Log In**: Securely access your dashboard.
-2.  **Create Client**: Add a new customer and auto-capture their location.
-3.  **Generate Estimate**: Build a quote using your real-time inventory.
-4.  **Track Profit**: Watch your project financials update automatically as you work.
+![Jasper Dashboard](file:///C:/Users/Jaskaran/.gemini/antigravity/brain/64baa5ab-e68d-4be6-84a6-b19b3f8e5ae6/jasper_final_verify.png)
 
-## 🎨 App Tour: What You See (Aesthetics & Layout)
-*   **Overall Look**: A professional, immersive **Dark Mode** interface (Deep Blue/Black background) that is easy on the eyes and looks modern.
-*   **Key Colors**:
-    *   **Background**: Deep dark blue (`#0E1117`) for a unified look.
-    *   **Cards**: Lighter gray panels (`#262730`) with subtle borders to make your data pop.
-    *   **Text**: Crisp white text for readability, with muted labels.
-*   **Navigation**: A simple sidebar menu with **7 clear tabs** (Dashboard, New Client, Estimator, Inventory, Suppliers, P&L, Settings) lets you switch between tasks instantly.
+## Features
 
-## 💡 Key Features Explained
+- **Dashboard**: Real-time overview of your financial health (Net Balance, Income, Expenses).
+- **Jasper Layout**: 2-column responsive design optimized for financial clarity.
+    - **Spending Overview**: Directly correlates category spending with your net balance.
+    - **Cashflow Trend**: Visualizes your surplus history and savings rate over time.
+- **Transactions**: Add, view, and delete income/expense records with category tagging.
+- **Budgets & Goals**:
+    - **Category Budgeting**: Set precise limits for `Food`, `Shopping`, `Travel`, etc.
+    - **Global Budget**: Monthly spending cap enforcement.
+- **Analytics**:
+    - **Pulse Metrics**: Savings Rate, Runway (No Burn / Months left), Spending vs Budget.
+    - **Solvency Warning**: Smart alerts when your budget is insolvent against your balance.
+- **PWA Support**: Installable on mobile with native-like feel (`viewport-fit=cover`) and custom icons.
 
-### 1. The Estimator Engine (Your Quote Generator)
-*   **Goal**: Quickly create accurate client quotes without doing math in your head.
-*   **The Math**: The system handles all the complex calculations. **Crucially, all final prices are automatically rounded UP to the nearest ₹100.** This simplifies billing and avoids dealing with loose change.
-*   **Margins**: You can set standard profit margins for Parts, Labor, and Extras. For special projects, you can override these with custom sliders.
-*   **Safety Check**: The app watches your stock. If you try to quote for 10 items but only have 5, it gives you a **Low Stock Warning** immediately.
+## Tech Stack
 
-### 2. Financial Controls
-*   **P&L (Profit & Loss)**: This tab acts as your business health monitor. It features **7 interactive charts** (including Bar, Pie, Scatter, Line, and Radar charts) to visualize Revenue, Expenses, Client Profitability, and Business Health. It also tracks your **Outstanding Amount** and Net Cash Profit in real-time.
-*   **Advance Calculation**: No more guessing how much advance to ask for. The built-in calculator automatically figures out the minimum advance needed to cover your material costs plus a 10% profit buffer.
+- **Framework**: Next.js 14+ (App Router)
+- **Styling**: Tailwind CSS (v4) + Custom CSS Variables (Glassmorphism)
+- **Backend**: Supabase (PostgreSQL)
+- **State**: React Context API (`FinanceContext`)
+- **Icons**: Lucide React + Custom Jasper Assets
 
-### 3. Inventory & Purchasing
-*   **Inventory**: Your digital warehouse. Track exactly what you have in stock and what it costs (Base Rate).
-*   **Purchasing**: When you buy new stock from suppliers, simply log it in the app. The system automatically adds the quantity to your stock and updates the item's cost price to the new rate.
+## Getting Started
 
-### 4. Client Management & Workflow
-*   **Dashboard**: Your command center. See a list of all active clients, check their status (e.g., "Order Received"), and make quick updates.
-*   **Geolocation**: Forget asking for directions. When adding a new client, one click captures their exact GPS location and creates a Google Maps link for your team.
+1.  **Clone the repository**:
+    ```bash
+    git clone <your-repo-url>
+    cd jasper
+    ```
 
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-### 5. Staff Management 👥
-*   **Team Roster**: Manage your team members, track their status (Available/On Site), and assign them to projects.
-*   **Roles & Wages**: Define custom roles and set daily wages for accurate labor cost tracking.
+3.  **Environment Setup**:
+    Create `.env.local` with your Supabase credentials:
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+    ```
 
----
+4.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
 
-## 📱 Automated iOS Build (LiquidGlassFinance)
+## Project Structure
 
-This project includes a CI/CD pipeline configured with **Codemagic** to automatically build the iOS application (`.ipa`) whenever code is pushed to the `main` branch. This allows for cloud-based building without requiring local Mac hardware.
+- `/app`: Next.js App Router pages.
+- `/components`: UI Logic (`Sidebar`, `BalanceCard`, `Analytics`).
+- `/context`: Global state (`FinanceContext`).
+- `/public`: Static assets (Jasper logos, manifest).
 
-### ⚙️ Setup Instructions
-1.  **Connect Repository**: Log in to the [Codemagic Dashboard](https://codemagic.io/) and connect this GitHub repository.
-2.  **Configuration**: Codemagic will automatically detect the `codemagic.yaml` file in the root directory. No manual workflow configuration is needed in the UI.
-3.  **Trigger**: Push a commit to the `main` branch to trigger the `ios-free-build` workflow.
-4.  **Artifacts**: Once the build completes, download the `.ipa` file from the "Artifacts" section of the build page.
-
-### ⚠️ Important Note regarding App Store
-**The generated `.ipa` is unsigned (`--no-codesign`).**
-*   This pipeline is intended for **testing and sideloading** purposes only.
-*   To submit this app to the Apple App Store or use TestFlight, you must explicitly configure code signing with valid Apple Developer credentials.
-*   **Requirement**: A paid [Apple Developer Program](https://developer.apple.com/) membership ($99/year) is required for App Store submission and signed distribution.
-
+## Recent Updates (Jasper v1.0)
+- **Rebranding**: Complete migration from "Aurora Ledger" to "Jasper".
+- **UX Polish**: Removed confusing decimals (`₹0` instead of `₹0.0k`), fixed layout gaps, and enhanced mobile responsiveness.
+- **Infrastructure**: Cleaned up conflicting configuration and optimized build artifacts.

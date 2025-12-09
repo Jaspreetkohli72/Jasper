@@ -1,0 +1,22 @@
+import TopBar from "@/components/TopBar";
+import BalanceCard from "@/components/Dashboard/BalanceCard";
+import BudgetCard from "@/components/Dashboard/BudgetCard";
+import Analytics from "@/components/Dashboard/Analytics";
+
+export default function Home() {
+  return (
+    <>
+      <TopBar />
+      <section className="px-3.5 pb-20 mt-2 md:mt-0 grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-3.5 items-start">
+        <div className="flex flex-col gap-3.5">
+          <BalanceCard />
+          <Analytics part="left" />
+        </div>
+        <div className="flex flex-col gap-3.5">
+          <BudgetCard />
+          <Analytics part="right" />
+        </div>
+      </section>
+    </>
+  );
+}
