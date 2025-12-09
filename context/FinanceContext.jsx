@@ -7,6 +7,7 @@ const FinanceContext = createContext();
 export function FinanceProvider({ children }) {
     const [transactions, setTransactions] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [contacts, setContacts] = useState([]);
     const [budget, setBudget] = useState(null); // Global budget
     const [categoryBudgets, setCategoryBudgets] = useState([]); // Array of { category_id, amount_limit, ... }
     const [loading, setLoading] = useState(true);
@@ -21,10 +22,15 @@ export function FinanceProvider({ children }) {
                 if (catError) throw catError;
                 setCategories(cats || []);
 
+                // Fetch Contacts
+                const { data: conts, error: contError } = await supabase.from("contacts").select("*");
+                if (contError) console.warn("Contacts fetch error/empty:", contError);
+                setContacts(conts || []);
+
                 // 2. Fetch Transactions (ordered by date desc)
                 const { data: txs, error: txError } = await supabase
                     .from("transactions")
-                    .select("*, categories(name, icon, type)")
+                    .select("*, categories(name, icon, type), contacts(name)")
                     .order("transaction_date", { ascending: false });
                 if (txError) throw txError;
                 setTransactions(txs || []);
@@ -69,18 +75,21 @@ export function FinanceProvider({ children }) {
     const addTransaction = async (newTx) => {
         try {
             // Optimistic Update (optional, but let's just wait for DB for safety first)
-            const { amount, type, category_id, description, transaction_date } = newTx;
+            const { amount, type, category_id, description, transaction_date, contact_id } = newTx;
+
+            const payload = {
+                amount,
+                type,
+                category_id,
+                description,
+                transaction_date: transaction_date || new Date().toISOString().split('T')[0]
+            };
+            if (contact_id) payload.contact_id = contact_id;
 
             const { data, error } = await supabase
                 .from("transactions")
-                .insert([{
-                    amount,
-                    type,
-                    category_id,
-                    description,
-                    transaction_date: transaction_date || new Date().toISOString().split('T')[0]
-                }])
-                .select("*, categories(name, icon, type)")
+                .insert([payload])
+                .select("*, categories(name, icon, type), contacts(name)")
                 .single();
 
             if (error) throw error;
@@ -90,6 +99,24 @@ export function FinanceProvider({ children }) {
             return { success: true };
         } catch (error) {
             console.error("Error adding transaction:", error);
+            return { success: false, error };
+        }
+    };
+
+    // Add Contact
+    const addContact = async (contact) => {
+        try {
+            const { data, error } = await supabase
+                .from("contacts")
+                .insert([contact])
+                .select()
+                .single();
+
+            if (error) throw error;
+            setContacts(prev => [...prev, data]);
+            return { success: true };
+        } catch (error) {
+            console.error("Error adding contact:", error);
             return { success: false, error };
         }
     };
@@ -200,6 +227,25 @@ export function FinanceProvider({ children }) {
     const budgetRemaining = budgetLimit - budgetUsed;
     const spendingPercentage = budgetLimit > 0 ? Math.round((budgetUsed / budgetLimit) * 100) : 0;
 
+    // Contact Balances Calculation
+    const contactsWithBalances = contacts.map(contact => {
+        const contactTxs = transactions.filter(t => t.contact_id === contact.id);
+        // If I paid (Expense), they owe me (Positive)
+        const debtValue = contactTxs
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + Number(t.amount), 0);
+
+        // If they paid me (Income), it reduces debt (Negative)
+        const creditValue = contactTxs
+            .filter(t => t.type === 'income')
+            .reduce((sum, t) => sum + Number(t.amount), 0);
+
+        return {
+            ...contact,
+            balance: debtValue - creditValue
+        };
+    });
+
     // Advanced Metrics
     const savingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalExpense) / totalIncome) * 100) : 0;
 
@@ -240,6 +286,8 @@ export function FinanceProvider({ children }) {
             value={{
                 transactions,
                 categories,
+                contacts: contactsWithBalances, // Expose with calculated balances
+                addContact,
                 loading,
                 addTransaction,
                 deleteTransaction,

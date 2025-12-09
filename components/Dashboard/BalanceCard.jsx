@@ -51,7 +51,7 @@ export default function BalanceCard() {
                         </span>
                     </div>
 
-                    <div className="hidden md:grid grid-cols-2 gap-2.5 mt-1">
+                    <div className="grid grid-cols-2 gap-2.5 mt-1">
                         <button
                             onClick={openAddTxModal}
                             className="btn-core bg-gradient-to-br from-[#22c55e] to-[#41e2b8]"
