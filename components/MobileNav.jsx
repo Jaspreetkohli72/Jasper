@@ -18,7 +18,7 @@ export default function MobileNav() {
 
     const rightNavItems = [
         { name: "Budget", icon: Target, href: "/goals" }, // Mapping to goals for now or new budget page
-        { name: "Profile", icon: User, href: "/accounts" }, // Mapping to accounts for placeholder
+        { name: "Accounts", icon: User, href: "/accounts" }, // Mapping to accounts for placeholder
     ];
 
     return (
