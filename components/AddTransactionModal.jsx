@@ -13,9 +13,18 @@ export default function AddTransactionModal({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
+    const selectedCategory = categories.find(c => c.id === categoryId);
+    const isOther = selectedCategory?.name === "Other";
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!amount || !categoryId) return;
+
+        // Validation for "Other" category
+        if (isOther && !description.trim()) {
+            alert("Please add a note for 'Other' category transactions.");
+            return;
+        }
 
         setIsSubmitting(true);
         await addTransaction({
@@ -91,8 +100,8 @@ export default function AddTransactionModal({ isOpen, onClose }) {
                                     type="button"
                                     onClick={() => setCategoryId(cat.id)}
                                     className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border transition-all ${categoryId === cat.id
-                                            ? "bg-accent/20 border-accent text-accent"
-                                            : "bg-black/20 border-transparent text-muted hover:bg-white/5"
+                                        ? "bg-accent/20 border-accent text-accent"
+                                        : "bg-black/20 border-transparent text-muted hover:bg-white/5"
                                         }`}
                                 >
                                     <span className="text-xl">{cat.icon}</span>
@@ -108,8 +117,12 @@ export default function AddTransactionModal({ isOpen, onClose }) {
                             type="text"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Note (optional)"
-                            className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl focus:outline-none focus:border-white/20 text-sm"
+                            placeholder={isOther ? "Note (required)" : "Note (optional)"}
+                            className={`w-full px-4 py-3 bg-black/20 border rounded-xl focus:outline-none focus:border-white/20 text-sm ${isOther && !description
+                                    ? "border-red-500/50 focus:border-red-500"
+                                    : "border-white/10"
+                                }`}
+                            required={isOther}
                         />
                     </div>
 

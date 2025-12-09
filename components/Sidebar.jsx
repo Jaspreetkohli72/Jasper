@@ -14,7 +14,7 @@ export default function Sidebar() {
     const navItems = [
         { name: "Overview", icon: Home, href: "/" },
         { name: "Insights", icon: BarChart2, href: "/insights" },
-        { name: "Accounts", icon: CreditCard, href: "/accounts" },
+        { name: "Transactions", icon: CreditCard, href: "/accounts" },
         { name: "Goals", icon: Target, href: "/goals" },
     ];
 

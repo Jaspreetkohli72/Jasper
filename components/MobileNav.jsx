@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Home, BarChart2, Target, User, Plus } from "lucide-react";
+import { Home, BarChart2, Target, User, Plus, CreditCard } from "lucide-react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,7 +18,7 @@ export default function MobileNav() {
 
     const rightNavItems = [
         { name: "Budget", icon: Target, href: "/goals" }, // Mapping to goals for now or new budget page
-        { name: "Accounts", icon: User, href: "/accounts" }, // Mapping to accounts for placeholder
+        { name: "Transactions", icon: CreditCard, href: "/accounts" }, // Mapping to accounts for placeholder
     ];
 
     return (
