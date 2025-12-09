@@ -106,6 +106,12 @@ export function FinanceProvider({ children }) {
     // Add Contact
     const addContact = async (contact) => {
         try {
+            // Check for duplicates (case-insensitive)
+            const exists = contacts.some(c => c.name.toLowerCase() === contact.name.trim().toLowerCase());
+            if (exists) {
+                return { success: false, error: { message: "Contact already exists" } };
+            }
+
             const { data, error } = await supabase
                 .from("contacts")
                 .insert([contact])
@@ -114,9 +120,52 @@ export function FinanceProvider({ children }) {
 
             if (error) throw error;
             setContacts(prev => [...prev, data]);
-            return { success: true };
+            return { success: true, data };
         } catch (error) {
             console.error("Error adding contact:", error);
+            return { success: false, error };
+        }
+    };
+
+    // Delete Contact
+    const deleteContact = async (id) => {
+        console.log("Delete requested for ID:", id);
+        try {
+            const { error } = await supabase.from("contacts").delete().eq("id", id);
+
+            if (error) {
+                console.error("Supabase Delete Error:", error);
+                throw error;
+            }
+
+            // Force local update first
+            setContacts((prev) => prev.filter((c) => c.id !== id));
+
+            // Just to be safe, we could technically re-fetch, but filter is usually reliable.
+            // Let's stick to local update to be fast, but ensure we return success.
+            return { success: true };
+        } catch (error) {
+            console.error("Delete failed:", error);
+            return { success: false, error };
+        }
+    };
+
+    // Update Contact
+    const updateContact = async (id, updates) => {
+        try {
+            const { data, error } = await supabase
+                .from("contacts")
+                .update(updates)
+                .eq("id", id)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            setContacts((prev) => prev.map((c) => (c.id === id ? data : c)));
+            return { success: true };
+        } catch (error) {
+            console.error("Error updating contact:", error);
             return { success: false, error };
         }
     };
@@ -288,6 +337,8 @@ export function FinanceProvider({ children }) {
                 categories,
                 contacts: contactsWithBalances, // Expose with calculated balances
                 addContact,
+                updateContact,
+                deleteContact,
                 loading,
                 addTransaction,
                 deleteTransaction,

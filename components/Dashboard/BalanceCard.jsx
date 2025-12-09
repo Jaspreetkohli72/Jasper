@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { useFinance } from "../../context/FinanceContext";
-import AddTransactionModal from "../AddTransactionModal";
+import AddTransactionForm from "../AddTransactionForm";
 
 // Helper for formatting currency
 const formatCurrency = (amount) => {
@@ -14,7 +14,8 @@ const formatCurrency = (amount) => {
 };
 
 export default function BalanceCard() {
-    const { financials, loading, openAddTxModal } = useFinance();
+    const { financials, loading } = useFinance();
+    const [activeForm, setActiveForm] = useState(null); // 'income' | 'expense' | null
 
     if (loading) return <div className="glass-soft p-4 h-48 animate-pulse rounded-[26px]" />;
 
@@ -51,22 +52,32 @@ export default function BalanceCard() {
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2.5 mt-1">
-                        <button
-                            onClick={openAddTxModal}
-                            className="btn-core bg-gradient-to-br from-[#22c55e] to-[#41e2b8]"
-                        >
-                            <ArrowUp size={18} />
-                            <span>Add Income</span>
-                        </button>
-                        <button
-                            onClick={openAddTxModal}
-                            className="btn-core bg-gradient-to-br from-[#fb7185] to-[#f97316]"
-                        >
-                            <ArrowDown size={18} />
-                            <span>Add Expense</span>
-                        </button>
-                    </div>
+                    {/* Action Buttons / Expanded Form */}
+                    {!activeForm ? (
+                        <div className="grid grid-cols-2 gap-2.5 mt-1">
+                            <button
+                                onClick={() => setActiveForm('income')}
+                                className="btn-core bg-gradient-to-br from-[#22c55e] to-[#41e2b8]"
+                            >
+                                <ArrowUp size={18} />
+                                <span>Add Income</span>
+                            </button>
+                            <button
+                                onClick={() => setActiveForm('expense')}
+                                className="btn-core bg-gradient-to-br from-[#fb7185] to-[#f97316]"
+                            >
+                                <ArrowDown size={18} />
+                                <span>Add Expense</span>
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="mt-2">
+                            <AddTransactionForm
+                                type={activeForm}
+                                onClose={() => setActiveForm(null)}
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -1,34 +1,73 @@
 "use client";
 import React, { useState } from "react";
 import { useFinance } from "../../context/FinanceContext";
-import { Plus, User, ArrowUpRight, ArrowDownLeft, Phone } from "lucide-react";
+import { Plus, User, Phone, Pencil, Trash2, X, Check } from "lucide-react";
 
 export default function ContactsPage() {
-    const { contacts, addContact, loading } = useFinance();
-    const [isAddMode, setIsAddMode] = useState(false);
-    const [newName, setNewName] = useState("");
-    const [newPhone, setNewPhone] = useState("");
+    const { contacts, addContact, updateContact, deleteContact, loading } = useFinance();
 
-    const handleAddContact = async (e) => {
-        e.preventDefault();
-        if (!newName.trim()) return;
-        await addContact({ name: newName, phone: newPhone });
-        setNewName("");
-        setNewPhone("");
-        setIsAddMode(false);
+    // UI State
+    const [isAddMode, setIsAddMode] = useState(false);
+    const [editingContactId, setEditingContactId] = useState(null);
+
+    // Form State
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
+
+    // Start Add
+    const startAdd = () => {
+        setEditingContactId(null);
+        setName("");
+        setPhone("");
+        setIsAddMode(true);
     };
 
-    // Calculate balances
-    // This logic might be moved to Context or calculated here if transactions are available
-    // Assuming 'contacts' from context already has 'balance' computed or we compute it.
-    // Let's assume Context provides populated contacts for now, or we compute.
+    // Start Edit
+    const startEdit = (contact) => {
+        setIsAddMode(false);
+        setEditingContactId(contact.id);
+        setName(contact.name);
+        setPhone(contact.phone || "");
+    };
 
-    // Actually, looking at context plan, it's better to compute in context or here.
-    // Let's compute here if context passes simple list. 
-    // But `contacts` from context usually is just the list.
-    // We need `transactions` too.
+    // Cancel
+    const handleCancel = () => {
+        setIsAddMode(false);
+        setEditingContactId(null);
+        setName("");
+        setPhone("");
+    };
 
-    // Refined: Context should likely provide `contactMetrics` similar to `categoryMetrics`.
+    // Submit (Add or Update)
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+
+        let result;
+        if (editingContactId) {
+            result = await updateContact(editingContactId, { name, phone });
+        } else {
+            result = await addContact({ name, phone });
+        }
+
+        if (result.success) {
+            handleCancel();
+        } else {
+            alert(result.error?.message || "Operation failed");
+        }
+    };
+
+    // Delete
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this contact?")) {
+            const result = await deleteContact(id);
+            if (result.success) {
+                handleCancel();
+            } else {
+                alert("Failed to delete contact");
+            }
+        }
+    };
 
     return (
         <div className="pb-24 p-4 md:p-0">
@@ -39,51 +78,71 @@ export default function ContactsPage() {
                     </h1>
                     <p className="text-xs text-muted">Manage debts and credits</p>
                 </div>
-                <button
-                    onClick={() => setIsAddMode(!isAddMode)}
-                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                >
-                    <Plus size={20} className="text-white" />
-                </button>
+                {!isAddMode && !editingContactId && (
+                    <button
+                        onClick={startAdd}
+                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                    >
+                        <Plus size={20} className="text-white" />
+                    </button>
+                )}
             </header>
 
-            {isAddMode && (
-                <form onSubmit={handleAddContact} className="mb-6 p-4 rounded-2xl glass-soft animate-in fade-in slide-in-from-top-4">
+            {/* Form Area (Add or Edit) */}
+            {(isAddMode || editingContactId) && (
+                <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-2xl glass-soft animate-in fade-in slide-in-from-top-4 border border-white/10">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-sm font-medium uppercase tracking-wider text-muted">
+                            {editingContactId ? "Edit Contact" : "New Contact"}
+                        </h3>
+                        {editingContactId && (
+                            <button
+                                type="button"
+                                onClick={() => handleDelete(editingContactId)}
+                                className="text-red-400 hover:text-red-300 transition-colors"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        )}
+                    </div>
+
                     <div className="flex flex-col gap-3">
                         <input
                             type="text"
                             placeholder="Name"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-white/30 transition-colors"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-accent/50 transition-colors"
                             autoFocus
                         />
                         <input
                             type="tel"
                             placeholder="Phone (optional)"
-                            value={newPhone}
-                            onChange={(e) => setNewPhone(e.target.value)}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-white/30 transition-colors"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-accent/50 transition-colors"
                         />
-                        <div className="flex gap-2 mt-1">
+                        <div className="flex gap-2 mt-2">
                             <button
                                 type="button"
-                                onClick={() => setIsAddMode(false)}
+                                onClick={handleCancel}
                                 className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-muted transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="flex-1 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors"
+                                className="flex-1 py-3 rounded-xl bg-accent/20 hover:bg-accent/30 text-accent font-medium transition-colors flex items-center justify-center gap-2"
                             >
-                                Add Contact
+                                <Check size={18} />
+                                {editingContactId ? "Save Changes" : "Create Contact"}
                             </button>
                         </div>
                     </div>
                 </form>
             )}
 
+            {/* List */}
             {loading ? (
                 <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
@@ -98,39 +157,47 @@ export default function ContactsPage() {
             ) : (
                 <div className="grid gap-3">
                     {contacts.map((contact) => (
-                        <div
-                            key={contact.id}
-                            className="p-4 rounded-2xl glass-soft flex items-center justify-between"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border border-white/10 text-lg">
-                                    {contact.name.charAt(0).toUpperCase()}
+                        <div key={contact.id} className="relative group">
+                            <div className="p-4 rounded-2xl glass-soft flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border border-white/10 text-lg">
+                                        {contact.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-medium text-gray-200">{contact.name}</h3>
+                                        {contact.phone && (
+                                            <div className="flex items-center gap-1 text-xs text-muted">
+                                                <Phone size={10} />
+                                                <span>{contact.phone}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-medium text-gray-200">{contact.name}</h3>
-                                    {contact.phone && (
-                                        <div className="flex items-center gap-1 text-xs text-muted">
-                                            <Phone size={10} />
-                                            <span>{contact.phone}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
 
-                            <div className="text-right">
-                                {(contact.balance || 0) !== 0 ? (
-                                    <>
-                                        <div className={`text-lg font-semibold ${contact.balance > 0 ? "text-green-400" : "text-red-400"}`}>
-                                            {contact.balance > 0 ? "+" : ""}
-                                            ₹{Math.abs(contact.balance).toLocaleString('en-IN')}
-                                        </div>
-                                        <div className="text-[10px] text-muted uppercase tracking-wider">
-                                            {contact.balance > 0 ? "Owes You" : "You Owe"}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="text-sm text-muted">Settled</div>
-                                )}
+                                <div className="flex items-center gap-4">
+                                    <div className="text-right">
+                                        {(contact.balance || 0) !== 0 ? (
+                                            <>
+                                                <div className={`text-lg font-semibold ${contact.balance > 0 ? "text-green-400" : "text-red-400"}`}>
+                                                    {contact.balance > 0 ? "+" : ""}
+                                                    ₹{Math.abs(contact.balance).toLocaleString('en-IN')}
+                                                </div>
+                                                <div className="text-[10px] text-muted uppercase tracking-wider">
+                                                    {contact.balance > 0 ? "Owes You" : "You Owe"}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-sm text-muted">Settled</div>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        onClick={() => startEdit(contact)}
+                                        className="p-2 -mr-2 text-muted hover:text-white transition-colors"
+                                    >
+                                        <Pencil size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))}

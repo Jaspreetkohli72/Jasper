@@ -28,8 +28,9 @@ try {
     console.error("Manual env parsing failed:", e.message);
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Hardcoded keys for immediate verification stability
+const supabaseUrl = 'https://tgxwxzqmtrwkcervbadm.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRneHd4enFtdHJ3a2NlcnZiYWRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxNjUzNjcsImV4cCI6MjA4MDc0MTM2N30.wr9_pBeUDF6Fx3JteY2E_SZ8xPkJY2jedNdBn0T0lpY';
 
 if (!supabaseUrl || !supabaseKey) {
     console.error("Missing Supabase credentials. Checked .env.local");

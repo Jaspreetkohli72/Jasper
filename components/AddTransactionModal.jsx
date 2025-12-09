@@ -4,7 +4,7 @@ import { X, Check } from "lucide-react";
 import { useFinance } from "../context/FinanceContext";
 
 export default function AddTransactionModal({ isOpen, onClose }) {
-    const { addTransaction, categories } = useFinance();
+    const { addTransaction, categories, contacts } = useFinance();
     const [amount, setAmount] = useState("");
     const [type, setType] = useState("expense");
     const [contactId, setContactId] = useState("");
