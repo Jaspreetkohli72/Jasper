@@ -18,7 +18,7 @@ export default function BudgetCard() {
     const progress = Math.min((financials.budgetUsed / financials.budgetLimit) * 100, 100);
 
     return (
-        <div className="glass p-3.5 md:p-3 flex flex-col gap-2.5">
+        <div className="glass p-3.5 md:p-3 flex flex-col gap-2.5 w-full min-w-0">
             <div className="flex justify-between items-center gap-2">
                 <div>
                     <div className="text-[0.86rem] font-medium">Monthly budget</div>
@@ -50,7 +50,7 @@ export default function BudgetCard() {
                 <span>100%</span>
             </div>
 
-            {financials.solvency?.isInsolvent && (
+            {!loading && financials.solvency?.isInsolvent && (
                 <div className="mt-2 p-2 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 text-red-200 text-[0.75rem] font-medium">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />

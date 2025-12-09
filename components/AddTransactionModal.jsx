@@ -4,16 +4,10 @@ import { X, Check } from "lucide-react";
 import { useFinance } from "../context/FinanceContext";
 
 export default function AddTransactionModal({ isOpen, onClose }) {
-    const { addTransaction, categories, addTxInitialType } = useFinance();
+    const { addTransaction, categories, contacts } = useFinance();
     const [amount, setAmount] = useState("");
-    const [type, setType] = useState(addTxInitialType || "expense");
-
-    // Reset type when modal opens
-    React.useEffect(() => {
-        if (isOpen) {
-            setType(addTxInitialType || "expense");
-        }
-    }, [isOpen, addTxInitialType]);
+    const [type, setType] = useState("expense");
+    const [contactId, setContactId] = useState("");
     const [categoryId, setCategoryId] = useState("");
     const [description, setDescription] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +33,7 @@ export default function AddTransactionModal({ isOpen, onClose }) {
             type,
             category_id: categoryId,
             description,
+            contact_id: contactId || null,
             transaction_date: new Date().toISOString()
         });
         setIsSubmitting(false);
@@ -95,6 +90,23 @@ export default function AddTransactionModal({ isOpen, onClose }) {
                                 required
                             />
                         </div>
+                    </div>
+
+                    {/* Contact (Optional) */}
+                    <div>
+                        <label className="block mb-1.5 text-xs font-medium text-muted uppercase">Contact (Optional)</label>
+                        <select
+                            value={contactId}
+                            onChange={(e) => setContactId(e.target.value)}
+                            className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl focus:outline-none focus:border-white/20 text-sm appearance-none"
+                        >
+                            <option value="">None (Personal)</option>
+                            {contacts.map((contact) => (
+                                <option key={contact.id} value={contact.id}>
+                                    {contact.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* Category */}

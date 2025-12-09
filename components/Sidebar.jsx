@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Home, BarChart2, CreditCard, Target } from "lucide-react";
+import { Home, BarChart2, CreditCard, Target, Users } from "lucide-react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +15,7 @@ export default function Sidebar() {
         { name: "Overview", icon: Home, href: "/" },
         { name: "Insights", icon: BarChart2, href: "/insights" },
         { name: "Transactions", icon: CreditCard, href: "/accounts" },
+        { name: "Contacts", icon: Users, href: "/contacts" },
         { name: "Goals", icon: Target, href: "/goals" },
     ];
 
@@ -86,7 +87,7 @@ export default function Sidebar() {
                         </div>
                     </div>
 
-                    {financials.solvency?.isInsolvent && (
+                    {!loading && financials.solvency?.isInsolvent && (
                         <div className="mt-5 mb-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex flex-col gap-1.5 backdrop-blur-md">
                             <div className="flex items-center gap-2 text-red-200 text-[0.78rem] font-medium">
                                 <span className="relative flex h-2 w-2">

@@ -10,10 +10,15 @@ export default function Home() {
       <section className="px-3.5 pb-20 mt-2 md:mt-0 grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-3.5 items-start">
         <div className="flex flex-col gap-3.5">
           <BalanceCard />
+          <div className="md:hidden">
+            <BudgetCard />
+          </div>
           <Analytics part="left" />
         </div>
         <div className="flex flex-col gap-3.5">
-          <BudgetCard />
+          <div className="hidden md:block">
+            <BudgetCard />
+          </div>
           <Analytics part="right" />
         </div>
       </section>
