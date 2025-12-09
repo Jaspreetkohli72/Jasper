@@ -52,6 +52,14 @@ A modern, glassmorphic personal finance cockpit built with Next.js, Tailwind CSS
     npm run dev
     ```
 
+5.  **Deployment (Vercel)**:
+    When deploying to Vercel, **you must add the following Environment Variables** in the Project Settings:
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    
+    *Without these, the build will fail or the app will not function.*
+
+
 ## Project Structure
 
 - `/app`: Next.js App Router pages.
@@ -59,7 +67,16 @@ A modern, glassmorphic personal finance cockpit built with Next.js, Tailwind CSS
 - `/context`: Global state (`FinanceContext`).
 - `/public`: Static assets (Jasper logos, manifest).
 
+## Production Build
+
+To build and run for production:
+```bash
+npm run build
+npm start
+```
+
 ## Recent Updates (Jasper v1.0)
 - **Rebranding**: Complete migration from "Aurora Ledger" to "Jasper".
 - **UX Polish**: Removed confusing decimals (`₹0` instead of `₹0.0k`), fixed layout gaps, and enhanced mobile responsiveness.
 - **Infrastructure**: Cleaned up conflicting configuration and optimized build artifacts.
+- **Production Readiness**: Fixed data fetching issues (406 errors) and verified production build stability.
