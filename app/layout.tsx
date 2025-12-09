@@ -41,7 +41,7 @@ export default function RootLayout({
 
           <div className="min-h-screen flex gap-[18px] max-w-[1200px] mx-auto md:p-5 lg:p-6">
             <Sidebar />
-            <main className="flex-1 flex flex-col gap-4 px-4 pb-4 pt-0 md:p-0">{children}</main>
+            <main className="flex-1 flex flex-col gap-4 px-4 pb-4 pt-6 md:p-0">{children}</main>
           </div>
 
           <MobileNav />
