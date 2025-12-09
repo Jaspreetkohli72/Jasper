@@ -3,6 +3,18 @@ import React from "react";
 import { useFinance } from "../../context/FinanceContext";
 import { Trash2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 
+// Define Transaction type locally or import if available
+type Transaction = {
+    id: string;
+    type: "income" | "expense";
+    amount: number;
+    description: string;
+    transaction_date: string;
+    categories?: {
+        name: string;
+    };
+};
+
 export default function AccountsPage() {
     const { transactions, deleteTransaction, loading } = useFinance();
 
@@ -17,12 +29,12 @@ export default function AccountsPage() {
                     {transactions.length === 0 ? (
                         <div className="text-center text-muted py-8 text-sm">No transactions yet</div>
                     ) : (
-                        transactions.map((tx) => (
+                        transactions.map((tx: Transaction) => (
                             <div key={tx.id} className="flex items-center justify-between p-3 rounded-2xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.05)]">
                                 <div className="flex items-center gap-3">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tx.type === "income"
-                                            ? "bg-[rgba(34,197,94,0.15)] text-green-400"
-                                            : "bg-[rgba(244,63,94,0.15)] text-rose-400"
+                                        ? "bg-[rgba(34,197,94,0.15)] text-green-400"
+                                        : "bg-[rgba(244,63,94,0.15)] text-rose-400"
                                         }`}>
                                         {tx.type === "income" ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
                                     </div>

@@ -3,6 +3,16 @@ import React, { useState } from "react";
 import { useFinance } from "../../context/FinanceContext";
 import { Save } from "lucide-react";
 
+// Define Interfaces
+type CategoryMetric = {
+    id: string;
+    name: string;
+    icon: string;
+    limit: number;
+    used: number;
+    pct: number;
+};
+
 export default function GoalsPage() {
     const { financials, updateGlobalBudget, updateCategoryBudget, loading } = useFinance();
     const [newBudget, setNewBudget] = useState("");
@@ -55,7 +65,7 @@ export default function GoalsPage() {
                 <h2 className="text-[1.1rem] font-semibold mb-4 text-text">Category Limits</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {financials.categoryMetrics?.map((cat) => (
+                    {financials.categoryMetrics?.map((cat: CategoryMetric) => (
                         <CategoryBudgetCard key={cat.id} cat={cat} updateBudget={updateCategoryBudget} />
                     ))}
                 </div>
@@ -65,9 +75,9 @@ export default function GoalsPage() {
 }
 
 // Sub-component for individual category card
-function CategoryBudgetCard({ cat, updateBudget }) {
-    const [isEditing, setIsEditing] = React.useState(false);
-    const [val, setVal] = React.useState(cat.limit || "");
+function CategoryBudgetCard({ cat, updateBudget }: { cat: CategoryMetric; updateBudget: (id: string, limit: number) => Promise<any> }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [val, setVal] = useState(cat.limit || "");
 
     const handleSave = async () => {
         if (!val) return;

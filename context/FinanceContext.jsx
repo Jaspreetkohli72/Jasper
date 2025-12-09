@@ -36,7 +36,7 @@ export function FinanceProvider({ children }) {
                     .from("global_budgets")
                     .select("*")
                     .eq("month_year", currentMonth)
-                    .single();
+                    .maybeSingle();
 
                 // If no budget exists, we might want to create one or just handle null
                 if (!budgetError && budgets) {
