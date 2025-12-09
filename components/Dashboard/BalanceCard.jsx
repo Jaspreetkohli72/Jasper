@@ -53,14 +53,14 @@ export default function BalanceCard() {
 
                     <div className="hidden md:grid grid-cols-2 gap-2.5 mt-1">
                         <button
-                            onClick={openAddTxModal}
+                            onClick={() => openAddTxModal("income")}
                             className="btn-core bg-gradient-to-br from-[#22c55e] to-[#41e2b8]"
                         >
                             <ArrowUp size={18} />
                             <span>Add Income</span>
                         </button>
                         <button
-                            onClick={openAddTxModal}
+                            onClick={() => openAddTxModal("expense")}
                             className="btn-core bg-gradient-to-br from-[#fb7185] to-[#f97316]"
                         >
                             <ArrowDown size={18} />

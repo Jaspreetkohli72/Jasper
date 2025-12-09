@@ -4,9 +4,16 @@ import { X, Check } from "lucide-react";
 import { useFinance } from "../context/FinanceContext";
 
 export default function AddTransactionModal({ isOpen, onClose }) {
-    const { addTransaction, categories } = useFinance();
+    const { addTransaction, categories, addTxInitialType } = useFinance();
     const [amount, setAmount] = useState("");
-    const [type, setType] = useState("expense");
+    const [type, setType] = useState(addTxInitialType || "expense");
+
+    // Reset type when modal opens
+    React.useEffect(() => {
+        if (isOpen) {
+            setType(addTxInitialType || "expense");
+        }
+    }, [isOpen, addTxInitialType]);
     const [categoryId, setCategoryId] = useState("");
     const [description, setDescription] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,8 +126,8 @@ export default function AddTransactionModal({ isOpen, onClose }) {
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder={isOther ? "Note (required)" : "Note (optional)"}
                             className={`w-full px-4 py-3 bg-black/20 border rounded-xl focus:outline-none focus:border-white/20 text-sm ${isOther && !description
-                                    ? "border-red-500/50 focus:border-red-500"
-                                    : "border-white/10"
+                                ? "border-red-500/50 focus:border-red-500"
+                                : "border-white/10"
                                 }`}
                             required={isOther}
                         />

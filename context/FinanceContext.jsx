@@ -234,6 +234,7 @@ export function FinanceProvider({ children }) {
 
     // Modal State
     const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
+    const [addTxInitialType, setAddTxInitialType] = useState("expense");
 
     return (
         <FinanceContext.Provider
@@ -246,8 +247,12 @@ export function FinanceProvider({ children }) {
                 updateGlobalBudget,
                 updateCategoryBudget,
                 isAddTxModalOpen,
-                openAddTxModal: () => setIsAddTxModalOpen(true),
+                openAddTxModal: (type) => {
+                    setAddTxInitialType(type || "expense");
+                    setIsAddTxModalOpen(true);
+                },
                 closeAddTxModal: () => setIsAddTxModalOpen(false),
+                addTxInitialType,
                 financials: {
                     balance,
                     income: totalIncome,
