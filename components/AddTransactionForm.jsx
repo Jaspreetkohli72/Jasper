@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Check, X } from "lucide-react";
 import { useFinance } from "../context/FinanceContext";
 
-export default function AddTransactionForm({ type, onClose }) {
+export default function AddTransactionForm({ type, onClose, title }) {
     const { addTransaction, categories, contacts, addContact } = useFinance();
     const [amount, setAmount] = useState("");
     const [contactId, setContactId] = useState("");
@@ -37,21 +37,30 @@ export default function AddTransactionForm({ type, onClose }) {
     const isOther = selectedCategory?.name === "Other";
     const filteredCategories = categories.filter((c) => c.type === type);
 
+    const [errors, setErrors] = useState({ category: false, description: false });
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!amount || !categoryId) return;
 
-        if (isOther && !description.trim()) {
-            alert("Please add a note for 'Other' category transactions.");
+        const newErrors = {
+            category: !categoryId,
+            description: isOther && !description.trim()
+        };
+
+        if (newErrors.category || newErrors.description) {
+            setErrors(newErrors);
             return;
         }
+
+        // Clear errors if valid
+        setErrors({ category: false, description: false });
 
         setIsSubmitting(true);
         const result = await addTransaction({
             amount: parseFloat(amount),
             type,
             category_id: categoryId,
-            description,
+            description: description || (contactId ? (type === 'income' ? 'Received' : 'Paid') : 'Unspecified'),
             contact_id: contactId || null,
             transaction_date: new Date().toISOString()
         });
@@ -61,15 +70,16 @@ export default function AddTransactionForm({ type, onClose }) {
             onClose();
             setAmount("");
             setDescription("");
+            setErrors({ category: false, description: false });
         } else {
             alert("Failed to add transaction");
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="p-4 bg-black/20 rounded-2xl border border-white/5 space-y-4 animate-in slide-in-from-top-4 fade-in duration-300">
+        <form onSubmit={handleSubmit} className="p-4 bg-black/20 rounded-[24px] border border-white/5 space-y-4 animate-in slide-in-from-top-4 fade-in duration-300">
             <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                <span className="text-sm font-medium text-muted uppercase tracking-wider">New {type}</span>
+                <span className="text-sm font-medium text-muted uppercase tracking-wider">{title || `New ${type}`}</span>
                 <button type="button" onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors">
                     <X size={16} className="text-muted" />
                 </button>
@@ -87,6 +97,7 @@ export default function AddTransactionForm({ type, onClose }) {
                         placeholder="0.00"
                         className="w-full pl-8 pr-4 py-3 bg-black/20 border border-white/10 rounded-xl focus:outline-none focus:border-accent text-lg"
                         autoFocus
+                        onWheel={(e) => e.target.blur()}
                         required
                     />
                 </div>
@@ -197,10 +208,15 @@ export default function AddTransactionForm({ type, onClose }) {
                         <button
                             key={cat.id}
                             type="button"
-                            onClick={() => setCategoryId(cat.id)}
+                            onClick={() => {
+                                setCategoryId(cat.id);
+                                if (errors.category) setErrors(prev => ({ ...prev, category: false }));
+                            }}
                             className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border transition-all ${categoryId === cat.id
                                 ? "bg-accent/20 border-accent text-accent"
-                                : "bg-black/20 border-transparent text-muted hover:bg-white/5"
+                                : errors.category
+                                    ? "bg-red-500/10 border-red-500/50 text-red-400"
+                                    : "bg-black/20 border-transparent text-muted hover:bg-white/5"
                                 }`}
                         >
                             <span className="text-xl">{cat.icon}</span>
@@ -215,14 +231,19 @@ export default function AddTransactionForm({ type, onClose }) {
                 <input
                     type="text"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => {
+                        setDescription(e.target.value);
+                        if (errors.description && e.target.value) setErrors(prev => ({ ...prev, description: false }));
+                    }}
                     placeholder={isOther ? "Note (required)" : "Note (optional)"}
-                    className={`w-full px-4 py-3 bg-black/20 border rounded-xl focus:outline-none focus:border-white/20 text-sm ${isOther && !description
-                        ? "border-red-500/50 focus:border-red-500"
+                    className={`w-full px-4 py-3 bg-black/20 border rounded-xl focus:outline-none focus:border-white/20 text-sm ${(isOther && errors.description)
+                        ? "border-red-500/50 focus:border-red-500 placeholder:text-red-400/50"
                         : "border-white/10"
                         }`}
-                    required={isOther}
                 />
+                {errors.category && !categoryId && (
+                    <p className="mt-2 text-xs text-red-400 pl-1">Please select a category</p>
+                )}
             </div>
 
             {/* Submit */}

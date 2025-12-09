@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
-      <body className="h-full">
+      <body className="h-full" suppressHydrationWarning>
         <FinanceProvider>
           <div className="bg-layer" />
           <div className="bg-orb orb-1" />

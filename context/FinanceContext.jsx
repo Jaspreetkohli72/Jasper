@@ -31,7 +31,8 @@ export function FinanceProvider({ children }) {
                 const { data: txs, error: txError } = await supabase
                     .from("transactions")
                     .select("*, categories(name, icon, type), contacts(name)")
-                    .order("transaction_date", { ascending: false });
+                    .order("transaction_date", { ascending: false })
+                    .order("created_at", { ascending: false });
                 if (txError) throw txError;
                 setTransactions(txs || []);
 

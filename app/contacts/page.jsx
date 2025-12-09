@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useFinance } from "../../context/FinanceContext";
+import ContactBalanceCard from "../../components/Contacts/ContactBalanceCard";
 import { Plus, User, Phone, Pencil, Trash2, X, Check } from "lucide-react";
 
 export default function ContactsPage() {
@@ -87,6 +88,11 @@ export default function ContactsPage() {
                     </button>
                 )}
             </header>
+
+            {/* Net Balance Card */}
+            {!isAddMode && !editingContactId && (
+                <ContactBalanceCard />
+            )}
 
             {/* Form Area (Add or Edit) */}
             {(isAddMode || editingContactId) && (

@@ -9,7 +9,11 @@ import { useFinance } from "../context/FinanceContext";
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const { financials, loading } = useFinance();
+    const { financials, loading, contacts } = useFinance();
+
+    // Calculate Debt/Credit Metrics
+    const toReceive = contacts?.reduce((sum, c) => sum + (c.balance > 0 ? c.balance : 0), 0) || 0;
+    const toPay = Math.abs(contacts?.reduce((sum, c) => sum + (c.balance < 0 ? c.balance : 0), 0) || 0);
 
     const navItems = [
         { name: "Overview", icon: Home, href: "/" },
@@ -85,6 +89,28 @@ export default function Sidebar() {
                                 {loading ? "..." : `${financials.spendingPercentage}% used`}
                             </span>
                         </div>
+
+                        {/* Debt / Credit Badges */}
+                        {(toReceive > 0 || toPay > 0) && (
+                            <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-[rgba(148,163,184,0.15)]">
+                                {toReceive > 0 && (
+                                    <div className="flex justify-between items-center gap-2">
+                                        <span className="text-green-400/80">To Receive</span>
+                                        <span className="text-[0.7rem] px-2 py-0.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 font-medium whitespace-nowrap">
+                                            ₹{toReceive.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                        </span>
+                                    </div>
+                                )}
+                                {toPay > 0 && (
+                                    <div className="flex justify-between items-center gap-2">
+                                        <span className="text-red-400/80">To Pay</span>
+                                        <span className="text-[0.7rem] px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 font-medium whitespace-nowrap">
+                                            ₹{toPay.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {!loading && financials.solvency?.isInsolvent && (

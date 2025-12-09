@@ -31,18 +31,13 @@ export default function BalanceCard() {
                             <div className="text-[0.82rem] uppercase tracking-[0.14em] text-[rgba(226,232,240,0.9)]">
                                 Net balance
                             </div>
-                            <div className="text-[1.6rem] font-semibold tracking-wide">
+                            <div className={`text-[1.6rem] font-semibold tracking-wide ${financials.balance >= 0 ? "text-white" : "text-red-300"}`}>
                                 {formatCurrency(financials.balance)}
                             </div>
                         </div>
-                        {/* 
-                        <div className="inline-flex items-center gap-1 py-1 px-2 rounded-full bg-[rgba(6,78,59,0.8)] border border-[rgba(52,211,153,0.8)] text-[#bbf7d0] text-[0.78rem]">
-                            <span>▲ 12.4%</span>
-                            <span className="opacity-85 hidden sm:inline">vs last month</span>
-                        </div>
-                        */}
                     </div>
 
+                    {/* Simple Text Metrics as requested */}
                     <div className="flex gap-3 text-[0.78rem] text-muted">
                         <span>
                             Income: <strong className="text-[#bbf7d0]">{formatCurrency(financials.income)}</strong>
@@ -52,36 +47,35 @@ export default function BalanceCard() {
                         </span>
                     </div>
 
-                    {/* Action Buttons / Expanded Form */}
+                    {/* Action Buttons */}
                     {!activeForm ? (
                         <div className="grid grid-cols-2 gap-2.5 mt-1">
                             <button
                                 onClick={() => setActiveForm('income')}
-                                className="btn-core bg-gradient-to-br from-[#22c55e] to-[#41e2b8]"
+                                className="group/btn relative flex items-center justify-center gap-2 py-3 px-4 rounded-[20px] bg-gradient-to-br from-[#22c55e] to-[#41e2b8] shadow-lg shadow-emerald-900/20 active:scale-[0.98] transition-all"
                             >
-                                <ArrowUp size={18} />
-                                <span>Add Income</span>
+                                <ArrowUp size={18} className="text-white" />
+                                <span className="text-sm font-semibold text-white">Add Income</span>
                             </button>
                             <button
                                 onClick={() => setActiveForm('expense')}
-                                className="btn-core bg-gradient-to-br from-[#fb7185] to-[#f97316]"
+                                className="group/btn relative flex items-center justify-center gap-2 py-3 px-4 rounded-[20px] bg-gradient-to-br from-[#fb7185] to-[#f97316] shadow-lg shadow-orange-900/20 active:scale-[0.98] transition-all"
                             >
-                                <ArrowDown size={18} />
-                                <span>Add Expense</span>
+                                <ArrowDown size={18} className="text-white" />
+                                <span className="text-sm font-semibold text-white">Add Expense</span>
                             </button>
                         </div>
                     ) : (
-                        <div className="mt-2">
+                        <div className="mt-2 animate-in fade-in slide-in-from-top-2">
                             <AddTransactionForm
                                 type={activeForm}
+                                title={activeForm === "income" ? "You Received" : "You Paid"}
                                 onClose={() => setActiveForm(null)}
                             />
                         </div>
                     )}
                 </div>
             </div>
-
-            {/* Modal is now global */}
         </>
     );
 }
