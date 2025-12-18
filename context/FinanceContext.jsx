@@ -308,8 +308,12 @@ export function FinanceProvider({ children }) {
 
     const balance = totalIncome - totalExpense;
 
+    // Budget Logic (Excluding Contact Transactions)
+    // We filter out any transaction that involves a contact (loans/debts) from the budget usage.
+    const budgetableExpenses = transactions.filter(t => t.type === 'expense' && !t.contact_id);
+
     const budgetLimit = budget?.amount_limit || 80000;
-    const budgetUsed = totalExpense; // Check if budget is expense-only? Usually yes.
+    const budgetUsed = budgetableExpenses.reduce((sum, t) => sum + Number(t.amount), 0);
     const budgetRemaining = budgetLimit - budgetUsed;
     const spendingPercentage = budgetLimit > 0 ? Math.round((budgetUsed / budgetLimit) * 100) : 0;
 
@@ -350,10 +354,9 @@ export function FinanceProvider({ children }) {
     const solvencyGap = budgetRemaining - balance;
     const isInsolvent = solvencyGap > 0;
 
-    // Top Expense Category for "Pulse"
+    // Top Expense Category for "Pulse" (Excluding Contacts)
     // Use a simple map to find top category
-    const expenseByCategory = transactions
-        .filter(t => t.type === 'expense')
+    const expenseByCategory = budgetableExpenses
         .reduce((acc, t) => {
             const catName = t.categories?.name || 'Uncategorized';
             acc[catName] = (acc[catName] || 0) + Number(t.amount);
@@ -394,7 +397,7 @@ export function FinanceProvider({ children }) {
                     income: totalIncome,
                     expense: totalExpense,
                     budgetLimit,
-                    budgetUsed,
+                    budgetUsed, // Uses filtered amount
                     budgetRemaining,
                     spendingPercentage,
                     solvency: {
@@ -407,10 +410,10 @@ export function FinanceProvider({ children }) {
                     categoryMetrics: categories.filter(c => c.type === 'expense').map(cat => {
                         const limitEntry = categoryBudgets.find(b => b.category_id === cat.id);
                         const limit = limitEntry ? Number(limitEntry.amount_limit) : 0;
-                        const used = expenseByCategory[cat.name] || 0;
+                        const used = expenseByCategory[cat.name] || 0; // Uses filtered map
 
-                        const usedAccurate = transactions
-                            .filter(t => t.category_id === cat.id && t.type === 'expense')
+                        const usedAccurate = budgetableExpenses
+                            .filter(t => t.category_id === cat.id)
                             .reduce((sum, t) => sum + Number(t.amount), 0);
 
                         return {
