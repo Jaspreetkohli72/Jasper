@@ -4,61 +4,68 @@ import { supabase } from "../lib/supabase";
 
 const FinanceContext = createContext();
 
-export function FinanceProvider({ children }) {
-    const [transactions, setTransactions] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [contacts, setContacts] = useState([]);
-    const [budget, setBudget] = useState(null); // Global budget
-    const [categoryBudgets, setCategoryBudgets] = useState([]); // Array of { category_id, amount_limit, ... }
-    const [loading, setLoading] = useState(true);
+export function FinanceProvider({ children, initialData = {} }) {
+    const [transactions, setTransactions] = useState(initialData.transactions || []);
+    const [categories, setCategories] = useState(initialData.categories || []);
+    const [contacts, setContacts] = useState(initialData.contacts || []);
+    const [budget, setBudget] = useState(initialData.globalBudget || null); // Global budget
+    const [categoryBudgets, setCategoryBudgets] = useState(initialData.categoryBudgets || []); // Array of { category_id, amount_limit, ... }
+    const [loading, setLoading] = useState(!initialData.transactions); // If data passed, not loading
 
-    // Fetch initial data
+    // Fetch initial data (only if not provided or to revalidate)
     useEffect(() => {
+        // If we have initial data, we might skip fetching, or fetch silently to update.
+        // For "fastest" feel, we trust initialData.
+        if (initialData.transactions) return;
+
         const fetchData = async () => {
             try {
                 setLoading(true);
-                // 1. Fetch Categories
-                const { data: cats, error: catError } = await supabase.from("categories").select("*");
+                const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+                // Parallel Fetching
+                const [
+                    { data: cats, error: catError },
+                    { data: conts, error: contError },
+                    { data: txs, error: txError },
+                    { data: budgets, error: budgetError },
+                    { data: catBudgets, error: catBudgetError }
+                ] = await Promise.all([
+                    supabase.from("categories").select("*"),
+                    supabase.from("contacts").select("*"),
+                    supabase.from("transactions")
+                        .select("*, categories(name, icon, type), contacts(name)")
+                        .order("transaction_date", { ascending: false })
+                        .order("created_at", { ascending: false }),
+                    supabase.from("global_budgets")
+                        .select("*")
+                        .eq("month_year", currentMonth) // YYYY-MM
+                        .maybeSingle(),
+                    supabase.from("budgets")
+                        .select("*")
+                        .eq("month_year", currentMonth)
+                ]);
+
+                // 1. Categories
                 if (catError) throw catError;
                 setCategories(cats || []);
 
-                // Fetch Contacts
-                const { data: conts, error: contError } = await supabase.from("contacts").select("*");
+                // Contacts
                 if (contError) console.warn("Contacts fetch error/empty:", contError);
                 setContacts(conts || []);
 
-                // 2. Fetch Transactions (ordered by date desc)
-                const { data: txs, error: txError } = await supabase
-                    .from("transactions")
-                    .select("*, categories(name, icon, type), contacts(name)")
-                    .order("transaction_date", { ascending: false })
-                    .order("created_at", { ascending: false });
+                // 2. Transactions
                 if (txError) throw txError;
                 setTransactions(txs || []);
 
-                // 3. Fetch Global Budget (for current month) - logic can be refined
-                // For now, just getting the latest one or a default
-                const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-                const { data: budgets, error: budgetError } = await supabase
-                    .from("global_budgets")
-                    .select("*")
-                    .eq("month_year", currentMonth)
-                    .maybeSingle();
-
-                // If no budget exists, we might want to create one or just handle null
+                // 3. Global Budget
                 if (!budgetError && budgets) {
                     setBudget(budgets);
                 } else {
-                    // Fallback or create logic could go here
-                    setBudget({ amount_limit: 80000 }); // Default fallback from UI
+                    setBudget({ amount_limit: 80000 }); // Default fallback
                 }
 
-                // 4. Fetch Category Budgets
-                const { data: catBudgets, error: catBudgetError } = await supabase
-                    .from("budgets")
-                    .select("*")
-                    .eq("month_year", currentMonth);
-
+                // 4. Category Budgets
                 if (catBudgetError) console.error("Error fetching category budgets:", catBudgetError);
                 setCategoryBudgets(catBudgets || []);
 
@@ -70,7 +77,7 @@ export function FinanceProvider({ children }) {
         };
 
         fetchData();
-    }, []);
+    }, [initialData]);
 
     // Add Transaction
     const addTransaction = async (newTx) => {
