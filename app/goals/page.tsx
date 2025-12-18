@@ -27,8 +27,14 @@ export default function GoalsPage() {
 
     return (
         <div className="flex flex-col gap-4">
+            <header className="flex items-center justify-between px-3 pt-0 pb-2">
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[1.2rem] font-semibold text-text">Budget Settings</span>
+                </div>
+            </header>
+
             <div className="glass p-5 rounded-[26px]">
-                <h2 className="text-[1.1rem] font-semibold mb-2 text-text">Budget Settings</h2>
+                {/* Title removed */}
                 <p className="text-muted text-sm mb-6">Manage your global monthly spending limit.</p>
 
                 <div className="flex flex-col gap-1 mb-6">

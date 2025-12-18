@@ -71,12 +71,10 @@ export default function ContactsPage() {
     };
 
     return (
-        <div className="pb-24 p-4 md:p-0">
-            <header className="flex items-center justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                        Contacts
-                    </h1>
+        <div className="pb-24">
+            <header className="flex items-center justify-between px-3 pt-0 pb-2 mb-4">
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[1.2rem] font-semibold text-text">Contacts</span>
                     <p className="text-xs text-muted">Manage debts and credits</p>
                 </div>
                 {!isAddMode && !editingContactId && (

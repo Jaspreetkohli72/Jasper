@@ -26,8 +26,13 @@ export default function AccountsPage() {
 
     return (
         <div className="flex flex-col gap-4">
+            <header className="flex items-center justify-between px-3 pt-0 pb-2">
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-[1.2rem] font-semibold text-text">Transaction History</span>
+                </div>
+            </header>
             <div className="glass p-5 rounded-[26px]">
-                <h2 className="text-[1.1rem] font-semibold mb-4 text-text">Transaction History</h2>
+                {/* Title removed */}
 
                 <div className="flex flex-col gap-3">
                     {transactions.length === 0 ? (
