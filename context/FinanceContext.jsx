@@ -4,80 +4,109 @@ import { supabase } from "../lib/supabase";
 
 const FinanceContext = createContext();
 
-export function FinanceProvider({ children, initialData = {} }) {
-    const [transactions, setTransactions] = useState(initialData.transactions || []);
-    const [categories, setCategories] = useState(initialData.categories || []);
-    const [contacts, setContacts] = useState(initialData.contacts || []);
-    const [budget, setBudget] = useState(initialData.globalBudget || null); // Global budget
-    const [categoryBudgets, setCategoryBudgets] = useState(initialData.categoryBudgets || []); // Array of { category_id, amount_limit, ... }
-    const [loading, setLoading] = useState(!initialData.transactions); // If data passed, not loading
+export function FinanceProvider({ children }) {
+    const [transactions, setTransactions] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [contacts, setContacts] = useState([]);
+    const [budget, setBudget] = useState(null);
+    const [categoryBudgets, setCategoryBudgets] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Fetch initial data (only if not provided or to revalidate)
+    // Load from LocalStorage on mount
     useEffect(() => {
-        // If we have initial data, we might skip fetching, or fetch silently to update.
-        // For "fastest" feel, we trust initialData.
-        if (initialData.transactions) return;
-
-        const fetchData = async () => {
+        const cached = typeof window !== 'undefined' ? localStorage.getItem('jasper_data') : null;
+        if (cached) {
             try {
-                setLoading(true);
-                const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-
-                // Parallel Fetching
-                const [
-                    { data: cats, error: catError },
-                    { data: conts, error: contError },
-                    { data: txs, error: txError },
-                    { data: budgets, error: budgetError },
-                    { data: catBudgets, error: catBudgetError }
-                ] = await Promise.all([
-                    supabase.from("categories").select("*"),
-                    supabase.from("contacts").select("*"),
-                    supabase.from("transactions")
-                        .select("*, categories(name, icon, type), contacts(name)")
-                        .order("transaction_date", { ascending: false })
-                        .order("created_at", { ascending: false }),
-                    supabase.from("global_budgets")
-                        .select("*")
-                        .eq("month_year", currentMonth) // YYYY-MM
-                        .maybeSingle(),
-                    supabase.from("budgets")
-                        .select("*")
-                        .eq("month_year", currentMonth)
-                ]);
-
-                // 1. Categories
-                if (catError) throw catError;
-                setCategories(cats || []);
-
-                // Contacts
-                if (contError) console.warn("Contacts fetch error/empty:", contError);
-                setContacts(conts || []);
-
-                // 2. Transactions
-                if (txError) throw txError;
-                setTransactions(txs || []);
-
-                // 3. Global Budget
-                if (!budgetError && budgets) {
-                    setBudget(budgets);
-                } else {
-                    setBudget({ amount_limit: 80000 }); // Default fallback
-                }
-
-                // 4. Category Budgets
-                if (catBudgetError) console.error("Error fetching category budgets:", catBudgetError);
-                setCategoryBudgets(catBudgets || []);
-
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setLoading(false);
+                const data = JSON.parse(cached);
+                setTransactions(data.transactions || []);
+                setCategories(data.categories || []);
+                setContacts(data.contacts || []);
+                setBudget(data.budget || null);
+                setCategoryBudgets(data.categoryBudgets || []);
+                setLoading(false); // Valid cache found, show immediately
+            } catch (e) {
+                console.error("Cache parse error", e);
             }
-        };
+        }
 
+        // Always fetch fresh data
         fetchData();
-    }, [initialData]);
+    }, []);
+
+    // Save to LocalStorage whenever data changes
+    useEffect(() => {
+        if (!loading && transactions.length > 0) {
+            const cache = {
+                transactions,
+                categories,
+                contacts,
+                budget,
+                categoryBudgets
+            };
+            localStorage.setItem('jasper_data', JSON.stringify(cache));
+        }
+    }, [transactions, categories, contacts, budget, categoryBudgets, loading]);
+
+    const fetchData = async () => {
+        try {
+            // Only set loading true if we didn't have cache
+            // If we had cache, we update silently (Stale-While-Revalidate)
+            // But we already handled initial loading state in the first effect logic implicitly?
+            // Actually, we need to know if we successfully loaded cache.
+            // Let's refine:
+            // If cache exists, loading is already false.
+            // If no cache, loading is true.
+
+            const currentMonth = new Date().toISOString().slice(0, 7);
+
+            const [
+                { data: cats, error: catError },
+                { data: conts, error: contError },
+                { data: txs, error: txError },
+                { data: budgets, error: budgetError },
+                { data: catBudgets, error: catBudgetError }
+            ] = await Promise.all([
+                supabase.from("categories").select("*"),
+                supabase.from("contacts").select("*"),
+                supabase.from("transactions")
+                    .select("*, categories(name, icon, type), contacts(name)")
+                    .order("transaction_date", { ascending: false })
+                    .order("created_at", { ascending: false }),
+                supabase.from("global_budgets")
+                    .select("*")
+                    .eq("month_year", currentMonth)
+                    .maybeSingle(),
+                supabase.from("budgets")
+                    .select("*")
+                    .eq("month_year", currentMonth)
+            ]);
+
+            if (catError) throw catError;
+            setCategories(cats || []);
+
+            if (contError) console.warn("Contacts fetch error:", contError);
+            setContacts(conts || []);
+
+            if (txError) throw txError;
+            setTransactions(txs || []);
+
+            if (!budgetError && budgets) {
+                setBudget(budgets);
+            } else {
+                setBudget({ amount_limit: 80000 });
+            }
+
+            if (catBudgetError) console.error("Error fetching category budgets:", catBudgetError);
+            setCategoryBudgets(catBudgets || []);
+
+            // Initial fetch done, loading is false (if it wasn't already)
+            setLoading(false);
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setLoading(false);
+        }
+    };
 
     // Add Transaction
     const addTransaction = async (newTx) => {
