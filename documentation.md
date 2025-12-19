@@ -95,6 +95,31 @@ The landing page ("Cockpit").
 ### `components/Contacts/`
 - **`ContactBalanceCard`:** Shows total "You get" vs "You owe".
 
+### `components/Insights/DetailedAnalytics.jsx` [NEW]
+- **Purpose:** Deep dive financial analysis.
+- **Features:**
+  - Bar Chart: Income vs Expense (6-month history).
+  - Sparklines: Trends for top 3 categories.
+  - Metrics: "Healthy" Savings Rate indicator, Largest Expense, Avg Transaction Value, Top Category.
+
+### Recent Changes
+- **PDF Bank Statement Import**: Added support for uploading PDF statements (HDFC, Axis, UPI formats detected). Includes:
+    - Dedicated `ImportModal` with transactions review.
+    - Local `pdf.js` worker for reliable parsing.
+    - Income/Expense detection engine (keywords: IMPS, NEFT, CR, Received).
+    - Debug Mode for inspecting raw PDF text.
+- **Advanced Insights**: Added "Largest Expense", "Most Frequent Category", and "Average Transaction Value" cards.
+- **Category Management**: Added ability to add/delete custom categories.
+
+### `components/CategoryManager.jsx` [NEW]
+- **Purpose:** Manage custom categories.
+- **Features:** Add new categories (auto-icon selection), Delete existing categories (safeguarded against use).
+
+### `components/ImportModal.jsx` [NEW]
+- **Purpose:** Import Bank Statements (PDF).
+- **Tech:** Client-side parsing via `pdfjs-dist`.
+- **Workflow:** Parse -> Review -> Bulk Insert.
+
 ---
 
 ## 5. Pages

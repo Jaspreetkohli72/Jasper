@@ -1,9 +1,11 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { useFinance } from "../../context/FinanceContext";
-import { Trash2, ArrowUpRight, ArrowDownLeft } from "lucide-react";
+import { Trash2, ArrowUpRight, ArrowDownLeft, Upload } from "lucide-react";
+import dynamic from 'next/dynamic';
 
-// Define Transaction type locally or import if available
+const ImportModal = dynamic(() => import('../../components/ImportModal'), { ssr: false });
+
 type Transaction = {
     id: string;
     type: "income" | "expense";
@@ -21,6 +23,7 @@ type Transaction = {
 
 export default function AccountsPage() {
     const { transactions, deleteTransaction, loading } = useFinance();
+    const [isImportOpen, setIsImportOpen] = useState(false);
 
     if (loading) return <div className="p-4 glass rounded-[26px] h-64 animate-pulse" />;
 
@@ -30,10 +33,20 @@ export default function AccountsPage() {
                 <div className="flex flex-col gap-0.5">
                     <span className="text-[1.2rem] font-semibold text-text">Transaction History</span>
                 </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsImportOpen(true)}
+                        className="p-2 rounded-full bg-white/5 hover:bg-white/10 active:bg-white/20 transition-colors text-muted hover:text-white"
+                        title="Import PDF"
+                    >
+                        <Upload size={20} />
+                    </button>
+                    <div className="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center text-accent text-xs font-semibold">
+                        {transactions.length}
+                    </div>
+                </div>
             </header>
             <div className="glass p-5 rounded-[26px]">
-                {/* Title removed */}
-
                 <div className="flex flex-col gap-3">
                     {transactions.length === 0 ? (
                         <div className="text-center text-muted py-8 text-sm">No transactions yet</div>
@@ -85,6 +98,8 @@ export default function AccountsPage() {
                     )}
                 </div>
             </div>
+
+            {isImportOpen && <ImportModal onClose={() => setIsImportOpen(false)} />}
         </div>
     );
 }

@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, Settings } from "lucide-react";
 import { useFinance } from "../context/FinanceContext";
+import CategoryManager from "./CategoryManager";
 
 export default function AddTransactionForm({ type, onClose, title }) {
     const { addTransaction, categories, contacts, addContact } = useFinance();
@@ -15,6 +16,7 @@ export default function AddTransactionForm({ type, onClose, title }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isCreatingContact, setIsCreatingContact] = useState(false);
     const [newContactName, setNewContactName] = useState("");
+    const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
 
     const handleCreateContact = async () => {
         if (!newContactName.trim()) return;
@@ -202,7 +204,16 @@ export default function AddTransactionForm({ type, onClose, title }) {
 
             {/* Category */}
             <div>
-                <label className="block mb-1.5 text-xs font-medium text-muted uppercase">Category</label>
+                <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-xs font-medium text-muted uppercase">Category</label>
+                    <button
+                        type="button"
+                        onClick={() => setIsCategoryManagerOpen(true)}
+                        className="flex items-center gap-1 text-[10px] text-accent hover:text-accent/80 transition-colors bg-accent/10 px-2 py-1 rounded-full"
+                    >
+                        <Settings size={12} /> Manage
+                    </button>
+                </div>
                 <div className="grid grid-cols-4 gap-2">
                     {filteredCategories.map((cat) => (
                         <button
@@ -250,17 +261,19 @@ export default function AddTransactionForm({ type, onClose, title }) {
             <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 mt-2 font-medium text-black rounded-xl bg-white hover:bg-gray-100 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-accent hover:bg-accent/90 text-white font-medium rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
             >
                 {isSubmitting ? (
-                    <span className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    <span className="flex items-center justify-center gap-2">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Saving...
+                    </span>
                 ) : (
-                    <>
-                        <Check size={18} />
-                        Save Transaction
-                    </>
+                    "Save Transaction"
                 )}
             </button>
+
+            {isCategoryManagerOpen && <CategoryManager onClose={() => setIsCategoryManagerOpen(false)} />}
         </form>
     );
 }

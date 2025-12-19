@@ -265,6 +265,42 @@ export function FinanceProvider({ children }) {
         }
     };
 
+    // Add Category
+    const addCategory = async (name, type, icon) => {
+        try {
+            const payload = { name, type, icon: icon || (type === 'income' ? 'ArrowDownLeft' : 'ShoppingCart') };
+            const { data, error } = await supabase.from('categories').insert([payload]).select().single();
+
+            if (error) throw error;
+
+            setCategories(prev => [...prev, data]);
+            return { success: true, data };
+        } catch (error) {
+            console.error("Error adding category:", error);
+            return { success: false, error };
+        }
+    };
+
+    // Delete Category
+    const deleteCategory = async (id) => {
+        try {
+            // Safety Check: Is used in transactions?
+            const isUsed = transactions.some(t => t.category_id === id);
+            if (isUsed) {
+                return { success: false, error: { message: "Cannot delete category with existing transactions." } };
+            }
+
+            const { error } = await supabase.from('categories').delete().eq('id', id);
+            if (error) throw error;
+
+            setCategories(prev => prev.filter(c => c.id !== id));
+            return { success: true };
+        } catch (error) {
+            console.error("Error deleting category:", error);
+            return { success: false, error };
+        }
+    };
+
     // Update Category Budget
     const updateCategoryBudget = async (categoryId, newLimit) => {
         try {
@@ -382,9 +418,12 @@ export function FinanceProvider({ children }) {
                 deleteContact,
                 loading,
                 addTransaction,
+                addTransaction,
                 deleteTransaction,
                 updateGlobalBudget,
                 updateCategoryBudget,
+                addCategory,
+                deleteCategory,
                 isAddTxModalOpen,
                 openAddTxModal: (type) => {
                     setAddTxInitialType(type || "expense");
