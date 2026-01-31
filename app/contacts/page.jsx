@@ -2,14 +2,16 @@
 import React, { useState } from "react";
 import { useFinance } from "../../context/FinanceContext";
 import ContactBalanceCard from "../../components/Contacts/ContactBalanceCard";
+import ContactDetailsModal from "../../components/Contacts/ContactDetailsModal";
 import { Plus, User, Phone, Pencil, Trash2, X, Check } from "lucide-react";
 
 export default function ContactsPage() {
-    const { contacts, addContact, updateContact, deleteContact, loading } = useFinance();
+    const { contacts, addContact, updateContact, deleteContact, loading, transactions } = useFinance();
 
     // UI State
     const [isAddMode, setIsAddMode] = useState(false);
     const [editingContactId, setEditingContactId] = useState(null);
+    const [viewingContactId, setViewingContactId] = useState(null);
 
     // Form State
     const [name, setName] = useState("");
@@ -161,8 +163,8 @@ export default function ContactsPage() {
             ) : (
                 <div className="grid gap-3">
                     {contacts.map((contact) => (
-                        <div key={contact.id} className="relative group">
-                            <div className="p-4 rounded-2xl glass-soft flex items-center justify-between relative z-10">
+                        <div key={contact.id} className="relative group hover:cursor-pointer" onClick={() => setViewingContactId(contact.id)}>
+                            <div className="p-4 rounded-2xl glass-soft flex items-center justify-between relative z-10 hover:bg-white/5 transition-colors">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center border border-white/10 text-lg">
                                         {contact.name.charAt(0).toUpperCase()}
@@ -196,7 +198,10 @@ export default function ContactsPage() {
                                     </div>
 
                                     <button
-                                        onClick={() => startEdit(contact)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            startEdit(contact);
+                                        }}
                                         className="p-2 -mr-2 text-muted hover:text-white transition-colors"
                                     >
                                         <Pencil size={18} />
@@ -206,6 +211,28 @@ export default function ContactsPage() {
                         </div>
                     ))}
                 </div>
+            )}
+
+            {/* Details Modal */}
+            {viewingContactId && (
+                (() => {
+                    const contact = contacts.find(c => c.id === viewingContactId);
+                    if (!contact) return null;
+                    // Filter transactions for this contact
+                    const contactTx = transactions ? transactions.filter(t => t.contact_id === contact.id) : [];
+
+                    return (
+                        <ContactDetailsModal
+                            contact={contact}
+                            transactions={contactTx}
+                            onClose={() => setViewingContactId(null)}
+                            onEdit={() => {
+                                setViewingContactId(null);
+                                startEdit(contact);
+                            }}
+                        />
+                    );
+                })()
             )}
         </div>
     );
