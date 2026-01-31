@@ -11,7 +11,12 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-export default function BudgetCard({ month, onMonthChange }) {
+/**
+ * @param {Object} props
+ * @param {string} [props.month]
+ * @param {function} [props.onMonthChange]
+ */
+export default function BudgetCard({ month = null, onMonthChange = null }) {
     const { financials: currentFinancials, getFinancials, loading, transactions } = useFinance();
     const [showHistory, setShowHistory] = React.useState(false);
 

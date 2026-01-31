@@ -11,13 +11,13 @@ export default function Home() {
         <div className="flex flex-col gap-3.5">
           <BalanceCard />
           <div className="md:hidden">
-            <BudgetCard />
+            <BudgetCard month={undefined} onMonthChange={undefined} />
           </div>
           <Analytics part="left" />
         </div>
         <div className="flex flex-col gap-3.5">
           <div className="hidden md:block">
-            <BudgetCard />
+            <BudgetCard month={undefined} onMonthChange={undefined} />
           </div>
           <Analytics part="right" />
         </div>
